@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Salon Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --bg:        #0d0d0e;
+      --surface:   #141416;
+      --surface2:  #1c1c20;
+      --border:    #2a2a30;
+      --gold:      #c9a84c;
+      --gold-dim:  #8a6e2f;
+      --gold-glow: rgba(201,168,76,0.15);
+      --text:      #f0ece4;
+      --muted:     #7a7670;
+      --green:     #4caf7d;
+      --amber:     #e8a838;
+      --red:       #e05555;
+      --blue:      #5b8fd4;
+      --purple:    #9b72d4;
+      --card-r:    14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      overflow: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── LAYOUT ── */
+    .shell {
+      position: relative; z-index: 1;
+      display: grid;
+      grid-template-rows: 72px 1fr;
+      height: 100vh;
+      padding: 12px;
+      gap: 10px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-r);
+      padding: 0 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::after {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
+    }
+
+    .salon-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--gold);
+    }
+    .salon-name span { color: var(--text); font-weight: 300; }
+
+    .header-center {
+      display: flex; align-items: center; gap: 20px;
+    }
+
+    .live-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(76,175,125,0.12);
+      border: 1px solid rgba(76,175,125,0.35);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.1em;
+      color: var(--green);
+      text-transform: uppercase;
+    }
+    .live-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(76,175,125,0.6); }
+      50%      { opacity: 0.7; box-shadow: 0 0 0 5px rgba(76,175,125,0); }
+    }
+
+    #clock {
+      font-family: 'DM Mono', monospace;
+      font-size: 22px;
+      font-weight: 300;
+      color: var(--text);
+      letter-spacing: 0.04em;
+    }
+    #date-str {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      font-family: 'Outfit', sans-serif;
+      text-align: right;
+    }
+
+    /* ── BODY GRID ── */
+    .body {
+      display: grid;
+      grid-template-columns: 340px 1fr 260px;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    /* ── PANEL ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-r);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .panel-head {
+      padding: 14px 18px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .panel-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .panel-count {
+      background: var(--gold-glow);
+      border: 1px solid var(--gold-dim);
+      color: var(--gold);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      border-radius: 10px;
+      padding: 2px 8px;
+      min-width: 24px;
+      text-align: center;
+    }
+    .panel-body {
+      flex: 1; overflow-y: auto;
+      padding: 10px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .panel-body::-webkit-scrollbar { width: 4px; }
+    .panel-body::-webkit-scrollbar-track { background: transparent; }
+    .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── BOOKING CARD ── */
+    .booking-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 14px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeSlide 0.4s ease forwards;
+      transition: border-color 0.3s;
+    }
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .booking-card::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px;
+    }
+    .booking-card.status-active::before   { background: var(--green); }
+    .booking-card.status-queued::before   { background: var(--amber); }
+    .booking-card.status-completed::before{ background: var(--muted); }
+    .booking-card.status-cancelled::before{ background: var(--red); }
+    .booking-card.status-pending::before  { background: var(--blue); }
+
+    .card-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .customer-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.1;
+      color: var(--text);
+    }
+    .chair-badge {
+      background: var(--gold-glow);
+      border: 1px solid var(--gold-dim);
+      color: var(--gold);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .membership-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: var(--purple);
+      background: rgba(155,114,212,0.1);
+      border: 1px solid rgba(155,114,212,0.25);
+      border-radius: 4px;
+      padding: 1px 7px;
+      margin-top: 2px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .card-services {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 6px 0 8px;
+      line-height: 1.4;
+    }
+    .card-services strong { color: var(--text); }
+
+    .card-meta {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+    }
+    .meta-pill {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 2px 8px;
+      color: var(--muted);
+    }
+    .meta-pill span { color: var(--text); }
+
+    .progress-bar {
+      margin-top: 9px;
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), #a8e6c2);
+      border-radius: 2px;
+      transition: width 10s linear;
+    }
+
+    /* ── MIDDLE (CHAIRS GRID) ── */
+    .middle {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-r);
+      padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .stat-label {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .stat-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--text);
+    }
+    .stat-value.gold { color: var(--gold); }
+    .stat-value.green { color: var(--green); }
+    .stat-sub {
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    /* Chairs panel */
+    .chairs-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-r);
+      flex: 1; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .chairs-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      padding: 14px;
+      overflow-y: auto;
+      align-content: start;
+    }
+
+    .chair-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      display: flex; flex-direction: column; gap: 6px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.4s, background 0.4s;
+      min-height: 110px;
+    }
+    .chair-card.occupied {
+      border-color: rgba(76,175,125,0.4);
+      background: rgba(76,175,125,0.05);
+    }
+    .chair-card.free {
+      background: rgba(255,255,255,0.015);
+      border-color: var(--border);
+    }
+
+    .chair-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+    .chair-status {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+    }
+    .chair-status.occupied { color: var(--green); }
+    .chair-status.free     { color: var(--muted); }
+
+    .chair-client {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.1;
+    }
+    .chair-service {
+      font-size: 10px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .chair-time {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--amber);
+    }
+
+    /* ── RIGHT PANEL: COMPLETED TODAY ── */
+    .payment-badge {
+      font-size: 9px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .pay-membership { background: rgba(155,114,212,0.15); color: var(--purple); border: 1px solid rgba(155,114,212,0.3); }
+    .pay-manual     { background: rgba(91,143,212,0.15);  color: var(--blue);   border: 1px solid rgba(91,143,212,0.3); }
+    .pay-mixed      { background: rgba(232,168,56,0.15);  color: var(--amber);  border: 1px solid rgba(232,168,56,0.3); }
+
+    .completed-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 12px;
+      animation: fadeSlide 0.4s ease forwards;
+    }
+    .cc-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 5px;
+    }
+    .cc-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px; font-weight: 600;
+      color: var(--text);
+    }
+    .cc-amount {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--gold);
+    }
+    .cc-meta {
+      font-size: 10px; color: var(--muted);
+      display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+      margin-top: 4px;
+    }
+
+    /* ── REVENUE TICKER ── */
+    .revenue-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .rev-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    .rev-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; font-weight: 700; color: var(--gold);
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      padding: 30px 16px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+    }
+
+    /* ── CONFIG OVERLAY ── */
+    #config-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 999;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #config-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 40px;
+      width: 440px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    #config-box h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 24px; font-weight: 600;
+      color: var(--gold); letter-spacing: 0.04em;
+    }
+    #config-box p { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .cfg-label { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+    .cfg-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .cfg-input:focus { border-color: var(--gold-dim); }
+    .cfg-btn {
+      background: var(--gold);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .cfg-btn:hover { opacity: 0.88; }
+    .cfg-err { color: var(--red); font-size: 11px; display: none; }
+
+    /* ── STATUS CHIPS ── */
+    .status-chip {
+      font-size: 9px;
+      padding: 1px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 600;
+    }
+    .chip-active    { background: rgba(76,175,125,0.15); color: var(--green); border: 1px solid rgba(76,175,125,0.3); }
+    .chip-queued    { background: rgba(232,168,56,0.15);  color: var(--amber); border: 1px solid rgba(232,168,56,0.3); }
+    .chip-completed { background: rgba(122,118,112,0.15); color: var(--muted); border: 1px solid var(--border); }
+    .chip-pending   { background: rgba(91,143,212,0.15);  color: var(--blue);  border: 1px solid rgba(91,143,212,0.3); }
+    .chip-cancelled { background: rgba(224,85,85,0.15);   color: var(--red);   border: 1px solid rgba(224,85,85,0.3); }
+
+    /* scrollbar for chairs */
+    .chairs-grid::-webkit-scrollbar { width: 4px; }
+    .chairs-grid::-webkit-scrollbar-track { background: transparent; }
+    .chairs-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<!-- CONFIG OVERLAY -->
+<div id="config-overlay">
+  <div id="config-box">
+    <h2>✦ Salon Dashboard</h2>
+    <p>Connect your Supabase project to start the live dashboard. Your credentials are stored only in this browser session.</p>
+    <div>
+      <div class="cfg-label">Supabase Project URL</div>
+      <input id="cfg-url" class="cfg-input" placeholder="https://xxxxxxxxxxxx.supabase.co" />
+    </div>
+    <div>
+      <div class="cfg-label">Supabase Anon Key</div>
+      <input id="cfg-key" class="cfg-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp..." />
+    </div>
+    <div>
+      <div class="cfg-label">Salon Name (optional)</div>
+      <input id="cfg-salon" class="cfg-input" placeholder="My Salon" />
+    </div>
+    <div>
+      <div class="cfg-label">Number of Chairs</div>
+      <input id="cfg-chairs" class="cfg-input" type="number" value="6" min="1" max="20" />
+    </div>
+    <div class="cfg-err" id="cfg-err">⚠ Could not connect. Check your URL and key.</div>
+    <button class="cfg-btn" onclick="startDashboard()">Connect & Launch →</button>
+  </div>
+</div>
+
+<!-- MAIN SHELL -->
+<div class="shell" id="main-shell" style="display:none;">
+  <header>
+    <div class="salon-name" id="salon-label">Salon <span>Dashboard</span></div>
+    <div class="header-center">
+      <div class="live-pill"><div class="live-dot"></div>Live</div>
+    </div>
+    <div style="text-align:right;">
+      <div id="clock">00:00:00</div>
+      <div id="date-str"></div>
+    </div>
+  </header>
+
+  <div class="body">
+    <!-- LEFT: Active + Queue -->
+    <div style="display:flex;flex-direction:column;gap:10px;min-height:0;">
+      <div class="panel" style="flex:1;min-height:0;">
+        <div class="panel-head">
+          <div class="panel-title">Active Now</div>
+          <div class="panel-count" id="active-count">0</div>
+        </div>
+        <div class="panel-body" id="active-list"></div>
+      </div>
+      <div class="panel" style="flex:1;min-height:0;">
+        <div class="panel-head">
+          <div class="panel-title">In Queue</div>
+          <div class="panel-count" id="queue-count">0</div>
+        </div>
+        <div class="panel-body" id="queue-list"></div>
+      </div>
+    </div>
+
+    <!-- MIDDLE: Stats + Chairs -->
+    <div class="middle">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Active</div>
+          <div class="stat-value green" id="s-active">0</div>
+          <div class="stat-sub">In chair</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Queued</div>
+          <div class="stat-value" id="s-queued">0</div>
+          <div class="stat-sub">Waiting</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Completed</div>
+          <div class="stat-value" id="s-completed">0</div>
+          <div class="stat-sub">Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Revenue</div>
+          <div class="stat-value gold" id="s-revenue">₹0</div>
+          <div class="stat-sub">Today</div>
+        </div>
+      </div>
+
+      <div class="chairs-panel">
+        <div class="panel-head">
+          <div class="panel-title">Chair Status</div>
+        </div>
+        <div class="chairs-grid" id="chairs-grid"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Completed today -->
+    <div style="display:flex;flex-direction:column;gap:10px;min-height:0;">
+      <div class="panel" style="flex:1;min-height:0;">
+        <div class="panel-head">
+          <div class="panel-title">Completed Today</div>
+          <div class="panel-count" id="completed-count">0</div>
+        </div>
+        <div class="panel-body" id="completed-list"></div>
+      </div>
+      <div class="revenue-row">
+        <div>
+          <div class="rev-label">Today's Revenue</div>
+          <div class="rev-value" id="rev-total">₹0</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="rev-label">Savings Given</div>
+          <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--muted);" id="rev-savings">₹0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── GLOBALS ──────────────────────────────────────────────
+let supabaseClient = null;
+let totalChairs = 6;
+let allBookings = [];
+let subscription = null;
+
+const todayStr = () => new Date().toISOString().split('T')[0];
+
+// ── CLOCK ────────────────────────────────────────────────
+function tickClock() {
+  const now = new Date();
+  const t = now.toLocaleTimeString('en-IN', { hour12: false });
+  const d = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('clock').textContent = t;
+  document.getElementById('date-str').textContent = d;
+}
+setInterval(tickClock, 1000);
+tickClock();
+
+// ── START ─────────────────────────────────────────────────
+async function startDashboard() {
+  const url   = document.getElementById('cfg-url').value.trim();
+  const key   = document.getElementById('cfg-key').value.trim();
+  const name  = document.getElementById('cfg-salon').value.trim() || 'Salon';
+  totalChairs = parseInt(document.getElementById('cfg-chairs').value) || 6;
+
+  if (!url || !key) { showErr('Please fill in URL and Anon Key.'); return; }
+
+  try {
+    supabaseClient = supabase.createClient(url, key);
+    // quick test
+    const { error } = await supabaseClient.from('view_dashboard').select('booking_id').limit(1);
+    if (error) throw error;
+  } catch(e) {
+    showErr('⚠ ' + (e.message || 'Connection failed'));
+    return;
+  }
+
+  // set salon name
+  const parts = name.split(' ');
+  const last  = parts.pop();
+  document.getElementById('salon-label').innerHTML =
+    `${parts.join(' ')} <span>${last}</span>`;
+
+  document.getElementById('config-overlay').style.display = 'none';
+  document.getElementById('main-shell').style.display    = 'grid';
+
+  await fetchData();
+  subscribeRealtime(url, key);
+  // poll every 30s as fallback
+  setInterval(fetchData, 30000);
+}
+
+function showErr(msg) {
+  const el = document.getElementById('cfg-err');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+// ── FETCH DATA ───────────────────────────────────────────
+async function fetchData() {
+  const today = todayStr();
+  const { data, error } = await supabaseClient
+    .from('view_dashboard')
+    .select('*')
+    .eq('booking_date', today)
+    .order('start_time', { ascending: true });
+
+  if (error) { console.error(error); return; }
+  allBookings = data || [];
+  render();
+}
+
+// ── REALTIME ─────────────────────────────────────────────
+function subscribeRealtime(url, key) {
+  subscription = supabaseClient
+    .channel('bookings-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+      fetchData();
+    })
+    .subscribe();
+}
+
+// ── RENDER ───────────────────────────────────────────────
+function render() {
+  const today = todayStr();
+  const todays = allBookings.filter(b => b.booking_date === today);
+
+  const active    = todays.filter(b => b.status === 'active');
+  const pending   = todays.filter(b => ['pending','queued','confirmed'].includes(b.status));
+  const completed = todays.filter(b => b.status === 'completed');
+  const cancelled = todays.filter(b => b.status === 'cancelled');
+
+  // counts
+  setCount('active-count', active.length);
+  setCount('queue-count',  pending.length);
+  setCount('completed-count', completed.length);
+  document.getElementById('s-active').textContent    = active.length;
+  document.getElementById('s-queued').textContent    = pending.length;
+  document.getElementById('s-completed').textContent = completed.length;
+
+  // revenue
+  const rev = completed.reduce((s, b) => s + parseFloat(b.final_amount || 0), 0);
+  const sav = completed.reduce((s, b) => s + parseFloat(b.savings || 0), 0);
+  const revFmt = '₹' + Math.round(rev).toLocaleString('en-IN');
+  document.getElementById('s-revenue').textContent = revFmt;
+  document.getElementById('rev-total').textContent = revFmt;
+  document.getElementById('rev-savings').textContent = '₹' + Math.round(sav).toLocaleString('en-IN');
+
+  // render panels
+  renderList('active-list',    active,    renderActiveCard);
+  renderList('queue-list',     pending,   renderQueueCard);
+  renderList('completed-list', completed, renderCompletedCard);
+
+  // chairs
+  renderChairs(active);
+}
+
+function setCount(id, n) {
+  document.getElementById(id).textContent = n;
+}
+
+function renderList(id, items, fn) {
+  const el = document.getElementById(id);
+  if (!items.length) {
+    el.innerHTML = '<div class="empty">— None —</div>';
+    return;
+  }
+  el.innerHTML = items.map(fn).join('');
+}
+
+function fmtTime(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+}
+
+function payBadge(mode) {
+  const map = { membership:'pay-membership', manual:'pay-manual', mixed:'pay-mixed' };
+  const cls = map[mode] || 'pay-manual';
+  return `<span class="payment-badge ${cls}">${mode || 'manual'}</span>`;
+}
+
+function progressPct(start, end) {
+  const now = Date.now();
+  const s = new Date(start).getTime();
+  const e = new Date(end).getTime();
+  if (now >= e) return 100;
+  if (now <= s) return 0;
+  return Math.round(((now - s) / (e - s)) * 100);
+}
+
+function renderActiveCard(b) {
+  const pct = progressPct(b.start_time, b.end_time);
+  const mins = Math.round(b.total_duration_minutes || 0);
+  const mem = b.membership ? `<div class="membership-tag">★ ${b.membership}</div>` : '';
+  return `
+  <div class="booking-card status-active">
+    <div class="card-top">
+      <div>
+        <div class="customer-name">${b.customer_name}</div>
+        ${mem}
+      </div>
+      ${b.chair_number ? `<div class="chair-badge">Chair ${b.chair_number}</div>` : ''}
+    </div>
+    <div class="card-services"><strong>${b.package_name || 'Custom'}</strong><br>${b.services || '—'}</div>
+    <div class="card-meta">
+      <div class="meta-pill">⏱ <span>${fmtTime(b.start_time)} – ${fmtTime(b.end_time)}</span></div>
+      <div class="meta-pill"><span>${mins} min</span></div>
+      <div class="meta-pill">₹<span>${Math.round(b.final_amount || 0).toLocaleString('en-IN')}</span></div>
+      ${payBadge(b.payment_mode)}
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+  </div>`;
+}
+
+function renderQueueCard(b) {
+  const mins = Math.round(b.total_duration_minutes || 0);
+  const mem = b.membership ? `<div class="membership-tag">★ ${b.membership}</div>` : '';
+  const chipClass = b.status === 'pending' ? 'chip-pending' : 'chip-queued';
+  return `
+  <div class="booking-card status-queued">
+    <div class="card-top">
+      <div>
+        <div class="customer-name">${b.customer_name}</div>
+        ${mem}
+      </div>
+      <span class="status-chip ${chipClass}">${b.status}</span>
+    </div>
+    <div class="card-services"><strong>${b.package_name || 'Custom'}</strong><br>${b.services || '—'}</div>
+    <div class="card-meta">
+      <div class="meta-pill">⏱ <span>${fmtTime(b.start_time)}</span></div>
+      <div class="meta-pill"><span>${mins} min</span></div>
+      <div class="meta-pill">₹<span>${Math.round(b.final_amount || 0).toLocaleString('en-IN')}</span></div>
+    </div>
+  </div>`;
+}
+
+function renderCompletedCard(b) {
+  return `
+  <div class="completed-card">
+    <div class="cc-top">
+      <div class="cc-name">${b.customer_name}</div>
+      <div class="cc-amount">₹${Math.round(b.final_amount || 0).toLocaleString('en-IN')}</div>
+    </div>
+    <div class="cc-meta">
+      <span>${fmtTime(b.end_time)}</span>
+      <span>·</span>
+      <span>${b.package_name || 'Custom'}</span>
+      <span>·</span>
+      ${payBadge(b.payment_mode)}
+    </div>
+  </div>`;
+}
+
+// ── CHAIRS ───────────────────────────────────────────────
+function renderChairs(active) {
+  const grid = document.getElementById('chairs-grid');
+  const occupied = {};
+  active.forEach(b => {
+    if (b.chair_number) occupied[b.chair_number] = b;
+  });
+
+  let html = '';
+  for (let i = 1; i <= totalChairs; i++) {
+    const b = occupied[i];
+    if (b) {
+      const pct = progressPct(b.start_time, b.end_time);
+      const remaining = Math.max(0, Math.round((new Date(b.end_time) - Date.now()) / 60000));
+      html += `
+      <div class="chair-card occupied">
+        <div class="chair-num">CHAIR ${i}</div>
+        <div class="chair-status occupied">● In Service</div>
+        <div class="chair-client">${b.customer_name}</div>
+        <div class="chair-service">${(b.services || '').split(',')[0]}</div>
+        <div class="chair-time">~${remaining}m left</div>
+        <div class="progress-bar" style="margin-top:auto;"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    } else {
+      html += `
+      <div class="chair-card free">
+        <div class="chair-num">CHAIR ${i}</div>
+        <div class="chair-status free">○ Available</div>
+      </div>`;
+    }
+  }
+  grid.innerHTML = html;
+}
+</script>
+</body>
+</html>
