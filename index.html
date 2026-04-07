@@ -3,599 +3,435 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Salon Display</title>
+  <title>Salon Manager</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
   <style>
     :root {
-      /* Premium Light Theme */
-      --bg:        #FBFaf7;
-      --surface:   #FFFFFF;
-      --surface2:  #F4F2EC;
-      --border:    #EBE6DD;
-      --gold:      #B9975B;
-      --gold-dim:  #A3834C;
-      --gold-glow: rgba(185, 151, 91, 0.1);
-      --text:      #2A2825;
-      --muted:     #8C877E;
-      --green:     #528B6A;
-      --amber:     #D99648;
-      --card-r:    20px;
-      --shadow:    0 12px 40px rgba(0, 0, 0, 0.04);
+      /* Shared Colors */
+      --gold: #B9975B;
+      --gold-dim: #A3834C;
+      --green: #528B6A;
+      --red: #D65C5C;
+      --text-dark: #2A2825;
+      --text-light: #F4F2EC;
+      
+      /* Staff Theme (Darker/Utility) */
+      --staff-bg: #1A1A1A;
+      --staff-surface: #242424;
+      --staff-border: #333333;
+      
+      /* TV Theme (Light/Elegant) */
+      --tv-bg: #FBFaf7;
+      --tv-surface: #FFFFFF;
+      --tv-border: #EBE6DD;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Outfit', sans-serif;
-      font-size: 16px;
-      overflow: hidden;
-    }
-
-    /* ── NOISE OVERLAY (Subtle for texture) ── */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
-      pointer-events: none; z-index: 0;
-    }
-
-    /* ── LAYOUT ── */
-    .shell {
-      position: relative; z-index: 1;
-      display: grid;
-      grid-template-rows: 90px 1fr;
-      height: 100vh;
-      padding: 24px 32px;
-      gap: 24px;
-      max-width: 1800px;
-      margin: 0 auto;
-    }
-
-    /* ── HEADER ── */
-    header {
+    body {
+      height: 100vh; width: 100vw; overflow: hidden;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--card-r);
-      padding: 0 32px;
-      box-shadow: var(--shadow);
+      background: var(--staff-bg);
+      color: var(--text-light);
     }
 
-    .salon-name {
+    /* ── SIDEBAR ── */
+    #sidebar {
+      width: 260px;
+      background: #111;
+      border-right: 1px solid var(--staff-border);
+      display: flex; flex-direction: column;
+      transition: width 0.3s;
+      z-index: 100;
+    }
+    .brand {
+      padding: 24px;
       font-family: 'Cormorant Garamond', serif;
-      font-size: 32px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      color: var(--gold);
-    }
-    .salon-name span { color: var(--text); font-weight: 400; }
-
-    .header-center {
-      display: flex; align-items: center; gap: 20px;
-    }
-
-    .live-pill {
-      display: flex; align-items: center; gap: 8px;
-      background: rgba(82, 139, 106, 0.08);
-      border: 1px solid rgba(82, 139, 106, 0.2);
-      border-radius: 20px;
-      padding: 6px 16px;
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      color: var(--green);
-      text-transform: uppercase;
-    }
-    .live-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: var(--green);
-      animation: pulse 2s ease-in-out infinite;
-    }
-    @keyframes pulse {
-      0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(82, 139, 106, 0.4); }
-      50%      { opacity: 0.6; box-shadow: 0 0 0 6px rgba(82, 139, 106, 0); }
-    }
-
-    #clock {
-      font-family: 'DM Mono', monospace;
-      font-size: 26px;
-      font-weight: 400;
-      color: var(--text);
-      letter-spacing: 0.02em;
-    }
-    #date-str {
-      font-size: 12px;
-      color: var(--muted);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      text-align: right;
-      margin-top: 2px;
-    }
-
-    /* ── BODY GRID (2 Columns for Customers) ── */
-    .body {
-      display: grid;
-      grid-template-columns: 1.5fr 1fr;
-      gap: 24px;
-      min-height: 0;
-    }
-
-    /* ── PANELS ── */
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--card-r);
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .panel-head {
-      padding: 24px 32px 16px;
-      border-bottom: 1px solid var(--border);
+      font-size: 24px; color: var(--gold);
+      border-bottom: 1px solid var(--staff-border);
       display: flex; align-items: center; justify-content: space-between;
-      flex-shrink: 0;
-      background: #FAFAFA;
     }
-    .panel-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 24px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      color: var(--text);
-    }
-    .panel-count {
-      background: var(--gold-glow);
-      color: var(--gold-dim);
-      font-family: 'DM Mono', monospace;
-      font-size: 14px;
-      font-weight: 500;
-      border-radius: 12px;
-      padding: 4px 12px;
-      min-width: 32px;
-      text-align: center;
-    }
-    .panel-body {
-      flex: 1; overflow-y: auto;
-      padding: 24px 32px;
-      display: flex; flex-direction: column; gap: 16px;
-    }
-    
-    /* Scrollbar */
-    .panel-body::-webkit-scrollbar { width: 6px; }
-    .panel-body::-webkit-scrollbar-track { background: transparent; }
-    .panel-body::-webkit-scrollbar-thumb { background: #E0DCD3; border-radius: 4px; }
-
-    /* ── ACTIVE CARDS (Currently Serving) ── */
-    .active-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 16px;
-    }
-    .active-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
-      animation: fadeSlide 0.5s ease forwards;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-    }
-    @keyframes fadeSlide {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    
-    .ac-top {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-    .chair-circle {
-      width: 54px; height: 54px;
-      border-radius: 50%;
-      background: var(--gold-glow);
-      border: 1px solid rgba(185, 151, 91, 0.3);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      color: var(--gold-dim);
-      flex-shrink: 0;
-    }
-    .chair-circle span { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: -2px; }
-    .chair-circle strong { font-family: 'Cormorant Garamond', serif; font-size: 24px; line-height: 1; font-weight: 600; }
-    
-    .ac-info { flex: 1; overflow: hidden; }
-    .ac-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--text);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .ac-service {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 2px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .ac-time {
-      font-family: 'DM Mono', monospace;
-      font-size: 12px;
-      color: var(--green);
-      text-align: right;
-    }
-
-    .progress-bar {
-      height: 4px;
-      background: var(--surface2);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--gold), #D4B886);
-      border-radius: 2px;
-      transition: width 1s linear;
-    }
-
-    /* ── QUEUE CARDS (Up Next) ── */
-    .queue-list { display: flex; flex-direction: column; gap: 12px; }
-    
-    .queue-item {
-      display: flex; align-items: center; gap: 16px;
-      background: var(--surface);
-      border: 1px solid var(--surface2);
-      border-radius: 12px;
-      padding: 16px 20px;
-      animation: fadeSlide 0.5s ease forwards;
-      transition: border-color 0.3s;
-    }
-    .queue-item:hover { border-color: var(--gold-dim); }
-    
-    .qi-num {
-      font-family: 'DM Mono', monospace;
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--muted);
-      width: 24px;
-      text-align: center;
-    }
-    .qi-info { flex: 1; }
-    .qi-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .qi-service {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-    .qi-eta {
-      text-align: right;
-    }
-    .qi-eta-label {
-      font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted);
-    }
-    .qi-eta-time {
-      font-family: 'DM Mono', monospace;
-      font-size: 14px; color: var(--text); font-weight: 500;
-      margin-top: 2px;
-    }
-
-    /* ── EMPTY STATE ── */
-    .empty {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--muted);
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 20px;
-      font-style: italic;
-    }
-
-    /* ── CONFIG OVERLAY ── */
-    #config-overlay {
-      position: fixed; inset: 0;
-      background: rgba(253, 252, 248, 0.9);
-      backdrop-filter: blur(10px);
-      z-index: 999;
-      display: flex; align-items: center; justify-content: center;
-    }
-    #config-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 40px 48px;
-      width: 480px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.06);
-      display: flex; flex-direction: column; gap: 20px;
-    }
-    #config-box h2 {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 32px; font-weight: 600;
-      color: var(--gold);
-    }
-    #config-box p { font-size: 14px; color: var(--muted); line-height: 1.5; }
-    .cfg-label { font-size: 12px; color: var(--text); font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; }
-    .cfg-input {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      font-family: 'DM Mono', monospace;
-      font-size: 13px;
-      padding: 12px 16px;
-      outline: none;
+    .nav-links { display: flex; flex-direction: column; padding: 16px 12px; gap: 8px; flex: 1; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; border-radius: 12px;
+      color: #999; text-decoration: none; cursor: pointer;
       transition: all 0.2s;
     }
-    .cfg-input:focus { border-color: var(--gold); background: var(--surface); box-shadow: 0 0 0 3px var(--gold-glow); }
-    .cfg-btn {
-      background: var(--gold);
-      color: #FFF;
-      border: none;
-      border-radius: 10px;
-      padding: 16px;
-      font-family: 'Outfit', sans-serif;
-      font-weight: 500;
-      font-size: 15px;
-      letter-spacing: 0.04em;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.2s;
-      margin-top: 8px;
-    }
-    .cfg-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-    .cfg-err { color: #D65C5C; font-size: 13px; display: none; background: #FEF2F2; padding: 10px; border-radius: 8px; border: 1px solid #FCA5A5; }
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: #FFF; }
+    .nav-item.active { background: var(--gold); color: #111; font-weight: 500; }
+    .nav-item i { font-size: 20px; }
 
+    /* Mobile Sidebar Bottom Nav */
+    @media (max-width: 768px) {
+      body { flex-direction: column-reverse; }
+      #sidebar { width: 100%; height: 70px; flex-direction: row; border-right: none; border-top: 1px solid var(--staff-border); }
+      .brand { display: none; }
+      .nav-links { flex-direction: row; padding: 8px; justify-content: space-around; }
+      .nav-item { flex-direction: column; gap: 4px; padding: 8px; font-size: 11px; }
+      .nav-item i { font-size: 24px; }
+    }
+
+    /* ── MAIN CONTENT AREA ── */
+    #main-content {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .view-container {
+      position: absolute; inset: 0;
+      display: none;
+      overflow-y: auto;
+    }
+    .view-container.active { display: block; }
+
+    /* ==========================================================================
+       VIEW 1: STAFF OPERATIONS (Dark Theme, Mobile Optimized)
+       ========================================================================== */
+    #view-staff { padding: 24px; }
+    .staff-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .staff-title { font-size: 24px; font-weight: 600; color: #FFF; }
+    
+    .staff-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;
+    }
+    .staff-col {
+      background: var(--staff-surface); border: 1px solid var(--staff-border);
+      border-radius: 16px; display: flex; flex-direction: column;
+      max-height: calc(100vh - 100px);
+    }
+    .staff-col-head { padding: 16px 20px; border-bottom: 1px solid var(--staff-border); font-weight: 500; display: flex; justify-content: space-between;}
+    .staff-col-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+
+    .staff-card {
+      background: #1E1E1E; border: 1px solid var(--staff-border);
+      border-radius: 12px; padding: 16px;
+    }
+    .sc-top { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .sc-name { font-size: 18px; font-weight: 500; color: #FFF; }
+    .sc-service { font-size: 13px; color: #999; margin-bottom: 16px; }
+    .sc-actions { display: flex; gap: 8px; }
+    
+    .btn {
+      flex: 1; padding: 10px; border-radius: 8px; border: none; cursor: pointer;
+      font-weight: 500; font-size: 13px; transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.8; }
+    .btn-green { background: var(--green); color: #FFF; }
+    .btn-gold { background: var(--gold); color: #111; }
+    .btn-outline { background: transparent; border: 1px solid var(--staff-border); color: #FFF; }
+
+    /* ==========================================================================
+       VIEW 2: WAITING AREA TV (Light Premium Theme)
+       ========================================================================== */
+    #view-tv {
+      background: var(--tv-bg);
+      color: var(--text-dark);
+      padding: 32px;
+    }
+    .tv-shell {
+      display: grid; grid-template-rows: auto 1fr; gap: 32px; height: 100%;
+      max-width: 1800px; margin: 0 auto;
+    }
+    .tv-header {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--tv-surface); border: 1px solid var(--tv-border);
+      border-radius: 20px; padding: 20px 32px; box-shadow: 0 12px 40px rgba(0,0,0,0.04);
+    }
+    .tv-brand { font-family: 'Cormorant Garamond', serif; font-size: 36px; color: var(--gold); font-weight: 600; }
+    .tv-brand span { color: var(--text-dark); font-weight: 400; }
+    .tv-time { font-family: 'DM Mono', monospace; font-size: 28px; text-align: right; }
+    .tv-date { font-size: 13px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .tv-body { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; min-height: 0; }
+    .tv-panel {
+      background: var(--tv-surface); border: 1px solid var(--tv-border);
+      border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.04);
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    .tv-panel-head { padding: 24px 32px; border-bottom: 1px solid var(--tv-border); background: #FAFAFA; font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; }
+    .tv-panel-body { padding: 32px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+
+    /* TV Cards */
+    .tv-active-card {
+      display: flex; align-items: center; gap: 20px; padding: 20px;
+      border: 1px solid var(--tv-border); border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
+    .tv-chair {
+      width: 64px; height: 64px; border-radius: 50%; background: rgba(185,151,91,0.1); border: 1px solid rgba(185,151,91,0.3);
+      display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gold-dim);
+    }
+    .tv-chair span { font-size: 10px; text-transform: uppercase; font-weight: 600; }
+    .tv-chair strong { font-family: 'Cormorant Garamond', serif; font-size: 28px; line-height: 1; }
+    .tv-ac-name { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; }
+    
+    .tv-queue-card {
+      display: flex; align-items: center; gap: 16px; padding: 16px 20px;
+      border: 1px solid #F4F2EC; border-radius: 12px; background: #FFF;
+    }
+    .tv-q-num { font-family: 'DM Mono', monospace; font-size: 18px; color: var(--gold-dim); width: 30px; }
+    .tv-q-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; flex: 1; }
+
+    /* ==========================================================================
+       MODALS & OVERLAYS
+       ========================================================================== */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 999;
+      display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);
+    }
+    .modal {
+      background: var(--staff-surface); border: 1px solid var(--staff-border);
+      border-radius: 16px; padding: 24px; width: 400px;
+    }
+    .modal h3 { font-size: 20px; margin-bottom: 16px; color: #FFF; }
+    .chair-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+    .chair-btn {
+      padding: 16px; background: #111; border: 1px solid var(--staff-border);
+      border-radius: 8px; color: #FFF; cursor: pointer; text-align: center;
+      font-family: 'DM Mono', monospace; font-size: 18px;
+    }
+    .chair-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .chair-btn.occupied { opacity: 0.3; cursor: not-allowed; border-color: var(--red); color: var(--red); }
   </style>
 </head>
 <body>
 
-<div id="config-overlay">
-  <div id="config-box">
-    <h2>✦ Salon Setup</h2>
-    <p>Connect your Supabase project to display the live waiting area dashboard.</p>
-    <div>
-      <div class="cfg-label">Supabase Project URL</div>
-      <input id="cfg-url" class="cfg-input" placeholder="https://xxxxxxxxxxxx.supabase.co" />
+  <div class="modal-overlay" id="setup-modal" style="display:flex;">
+    <div class="modal">
+      <h3>System Setup</h3>
+      <input id="cfg-url" type="text" placeholder="Supabase URL" style="width:100%; padding:12px; margin-bottom:12px; border-radius:8px; border:1px solid #333; background:#111; color:#FFF;">
+      <input id="cfg-key" type="password" placeholder="Anon Key" style="width:100%; padding:12px; margin-bottom:24px; border-radius:8px; border:1px solid #333; background:#111; color:#FFF;">
+      <button class="btn btn-gold" style="width:100%" onclick="initApp()">Connect to Database</button>
     </div>
-    <div>
-      <div class="cfg-label">Supabase Anon Key</div>
-      <input id="cfg-key" class="cfg-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp..." />
-    </div>
-    <div>
-      <div class="cfg-label">Salon Name</div>
-      <input id="cfg-salon" class="cfg-input" placeholder="Elegant Studio" />
-    </div>
-    <div class="cfg-err" id="cfg-err">⚠ Could not connect. Check your URL and key.</div>
-    <button class="cfg-btn" onclick="startDashboard()">Launch Display →</button>
   </div>
-</div>
 
-<div class="shell" id="main-shell" style="display:none;">
-  <header>
-    <div class="salon-name" id="salon-label">Elegant <span>Studio</span></div>
-    <div class="header-center">
-      <div class="live-pill"><div class="live-dot"></div>Live Updates</div>
+  <div class="modal-overlay" id="chair-modal">
+    <div class="modal">
+      <h3>Select Chair for <span id="assign-name" style="color:var(--gold);"></span></h3>
+      <input type="hidden" id="assign-id">
+      <div class="chair-grid" id="chair-grid"></div>
+      <button class="btn btn-outline" style="width:100%" onclick="closeModal('chair-modal')">Cancel</button>
     </div>
-    <div style="text-align:right;">
-      <div id="clock">00:00</div>
-      <div id="date-str"></div>
-    </div>
-  </header>
+  </div>
 
-  <div class="body">
+  <nav id="sidebar">
+    <div class="brand">Salon OS</div>
+    <div class="nav-links">
+      <a class="nav-item active" onclick="switchView('staff', this)">
+        <i class="ph ph-users-three"></i> Staff Operations
+      </a>
+      <a class="nav-item" onclick="switchView('tv', this)">
+        <i class="ph ph-monitor-play"></i> Waiting Area TV
+      </a>
+    </div>
+  </nav>
+
+  <main id="main-content">
     
-    <div class="panel">
-      <div class="panel-head">
-        <div class="panel-title">Currently Serving</div>
-        <div class="panel-count" id="active-count">0</div>
+    <div id="view-staff" class="view-container active">
+      <div class="staff-header">
+        <div class="staff-title">Today's Bookings</div>
+        <button class="btn btn-outline" onclick="fetchData()"><i class="ph ph-arrows-clockwise"></i> Refresh</button>
       </div>
-      <div class="panel-body">
-        <div class="active-grid" id="active-list">
-          </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-head">
-        <div class="panel-title">Up Next</div>
-        <div class="panel-count" id="queue-count">0</div>
-      </div>
-      <div class="panel-body">
-        <div class="queue-list" id="queue-list">
-          </div>
+      
+      <div class="staff-grid">
+        <div class="staff-col">
+          <div class="staff-col-head"><span>In Queue</span> <span id="staff-q-count" style="color:var(--gold);">0</span></div>
+          <div class="staff-col-body" id="staff-queued-list"></div>
+        </div>
+        
+        <div class="staff-col" style="border-color: rgba(82, 139, 106, 0.4);">
+          <div class="staff-col-head"><span>Active Now</span> <span id="staff-a-count" style="color:var(--green);">0</span></div>
+          <div class="staff-col-body" id="staff-active-list"></div>
+        </div>
       </div>
     </div>
 
-  </div>
-</div>
+    <div id="view-tv" class="view-container">
+      <div class="tv-shell">
+        <div class="tv-header">
+          <div class="tv-brand">Elegant <span>Studio</span></div>
+          <div>
+            <div class="tv-time" id="clock">00:00 AM</div>
+            <div class="tv-date" id="date-str">JAN 1, 2026</div>
+          </div>
+        </div>
+        <div class="tv-body">
+          <div class="tv-panel">
+            <div class="tv-panel-head">Currently Serving</div>
+            <div class="tv-panel-body" id="tv-active-list"></div>
+          </div>
+          <div class="tv-panel">
+            <div class="tv-panel-head">Up Next</div>
+            <div class="tv-panel-body" id="tv-queue-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
 
 <script>
-// ── GLOBALS ──────────────────────────────────────────────
 let supabaseClient = null;
-let allBookings = [];
-let subscription = null;
+let activeBookings = [];
+const TOTAL_CHAIRS = 6;
 
-const todayStr = () => new Date().toISOString().split('T')[0];
+// --- CLOCK ---
+setInterval(() => {
+  const d = new Date();
+  document.getElementById('clock').textContent = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('date-str').textContent = d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+}, 1000);
 
-// ── CLOCK ────────────────────────────────────────────────
-function tickClock() {
-  const now = new Date();
-  const t = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-  const d = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  document.getElementById('clock').textContent = t;
-  document.getElementById('date-str').textContent = d;
-}
-setInterval(tickClock, 1000);
-tickClock();
-
-// ── START ─────────────────────────────────────────────────
-async function startDashboard() {
-  const url   = document.getElementById('cfg-url').value.trim();
-  const key   = document.getElementById('cfg-key').value.trim();
-  const name  = document.getElementById('cfg-salon').value.trim() || 'Salon Studio';
-
-  if (!url || !key) { showErr('Please fill in URL and Anon Key.'); return; }
-
-  try {
-    supabaseClient = supabase.createClient(url, key);
-    // quick test
-    const { error } = await supabaseClient.from('view_dashboard').select('booking_id').limit(1);
-    if (error) throw error;
-  } catch(e) {
-    showErr('⚠ ' + (e.message || 'Connection failed'));
-    return;
-  }
-
-  // set salon name formatting (First words bold, last word light)
-  const parts = name.split(' ');
-  const last  = parts.length > 1 ? parts.pop() : '';
-  document.getElementById('salon-label').innerHTML =
-    `${parts.join(' ')} <span>${last}</span>`;
-
-  document.getElementById('config-overlay').style.display = 'none';
-  document.getElementById('main-shell').style.display    = 'grid';
-
-  await fetchData();
-  subscribeRealtime(url, key);
+// --- NAVIGATION ---
+function switchView(viewId, el) {
+  document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   
-  // Progress bar updater
-  setInterval(render, 30000); // re-render every 30s to update progress bars
+  document.getElementById(`view-${viewId}`).classList.add('active');
+  el.classList.add('active');
 }
 
-function showErr(msg) {
-  const el = document.getElementById('cfg-err');
-  el.textContent = msg; el.style.display = 'block';
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
 }
 
-// ── FETCH DATA ───────────────────────────────────────────
+// --- INIT & FETCH ---
+async function initApp() {
+  const url = document.getElementById('cfg-url').value.trim();
+  const key = document.getElementById('cfg-key').value.trim();
+  if(!url || !key) return alert("Required fields missing");
+
+  supabaseClient = supabase.createClient(url, key);
+  document.getElementById('setup-modal').style.display = 'none';
+  
+  await fetchData();
+  
+  // Realtime
+  supabaseClient.channel('custom-all-channel')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => fetchData())
+    .subscribe();
+}
+
 async function fetchData() {
-  const today = todayStr();
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Using the view_dashboard from your previous prompt to get customer names
   const { data, error } = await supabaseClient
     .from('view_dashboard')
     .select('*')
     .eq('booking_date', today)
+    .in('status', ['pending', 'queued', 'confirmed', 'active'])
     .order('start_time', { ascending: true });
 
   if (error) { console.error(error); return; }
-  allBookings = data || [];
-  render();
+  activeBookings = data || [];
+  renderAll();
 }
 
-// ── REALTIME ─────────────────────────────────────────────
-function subscribeRealtime(url, key) {
-  subscription = supabaseClient
-    .channel('bookings-live')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
-      fetchData();
-    })
-    .subscribe();
+// --- RENDERING ---
+function renderAll() {
+  const queued = activeBookings.filter(b => ['pending', 'queued', 'confirmed'].includes(b.status));
+  const active = activeBookings.filter(b => b.status === 'active');
+
+  // Staff Counters
+  document.getElementById('staff-q-count').textContent = queued.length;
+  document.getElementById('staff-a-count').textContent = active.length;
+
+  // Render Staff UI
+  document.getElementById('staff-queued-list').innerHTML = queued.map(b => `
+    <div class="staff-card">
+      <div class="sc-top"><div class="sc-name">${b.customer_name}</div></div>
+      <div class="sc-service">${b.package_name || 'Custom Service'} • ${b.total_duration_minutes}m</div>
+      <div class="sc-actions">
+        <button class="btn btn-gold" onclick="openChairModal(${b.booking_id}, '${b.customer_name}')">Assign Chair & Start</button>
+        <button class="btn btn-outline" style="flex:0.3" onclick="updateStatus(${b.booking_id}, 'cancelled')">Cancel</button>
+      </div>
+    </div>`).join('') || '<div style="color:#666; text-align:center;">No bookings in queue.</div>';
+
+  document.getElementById('staff-active-list').innerHTML = active.map(b => `
+    <div class="staff-card" style="border-left: 3px solid var(--green);">
+      <div class="sc-top">
+        <div class="sc-name">${b.customer_name}</div>
+        <div style="font-family:'DM Mono'; color:var(--green)">Chair ${b.chair_number}</div>
+      </div>
+      <div class="sc-service">${b.package_name || 'Custom Service'}</div>
+      <div class="sc-actions">
+        <button class="btn btn-green" onclick="updateStatus(${b.booking_id}, 'completed')">Mark Complete</button>
+      </div>
+    </div>`).join('') || '<div style="color:#666; text-align:center;">No active chairs.</div>';
+
+  // Render TV UI
+  document.getElementById('tv-active-list').innerHTML = active.map(b => `
+    <div class="tv-active-card">
+      <div class="tv-chair"><span>Chair</span><strong>${b.chair_number}</strong></div>
+      <div>
+        <div class="tv-ac-name">${b.customer_name}</div>
+        <div style="color:var(--muted); font-size: 18px;">${b.package_name || 'Service in progress'}</div>
+      </div>
+    </div>`).join('') || '<div style="padding:40px; text-align:center; color:var(--muted); font-style:italic; font-size:20px;">All chairs currently available.</div>';
+
+  document.getElementById('tv-queue-list').innerHTML = queued.map((b, i) => `
+    <div class="tv-queue-card">
+      <div class="tv-q-num">${i + 1}</div>
+      <div class="tv-q-name">${b.customer_name}</div>
+      <div style="font-family:'DM Mono'; color:var(--muted);">${new Date(b.start_time).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+    </div>`).join('') || '<div style="padding:40px; text-align:center; color:var(--muted); font-style:italic; font-size:20px;">Queue is empty.</div>';
 }
 
-// ── RENDER ───────────────────────────────────────────────
-function render() {
-  const today = todayStr();
-  const todays = allBookings.filter(b => b.booking_date === today);
-
-  const active  = todays.filter(b => b.status === 'active');
-  const pending = todays.filter(b => ['pending','queued','confirmed'].includes(b.status));
-
-  // counts
-  setCount('active-count', active.length);
-  setCount('queue-count',  pending.length);
-
-  // Render HTML
-  renderActiveArea('active-list', active);
-  renderQueueArea('queue-list', pending);
-}
-
-function setCount(id, n) {
-  document.getElementById(id).textContent = n;
-}
-
-function fmtTime(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-}
-
-function progressPct(start, end) {
-  if (!start || !end) return 0;
-  const now = Date.now();
-  const s = new Date(start).getTime();
-  const e = new Date(end).getTime();
-  if (now >= e) return 100;
-  if (now <= s) return 0;
-  return Math.round(((now - s) / (e - s)) * 100);
-}
-
-// ── RENDER TEMPLATES ─────────────────────────────────────
-function renderActiveArea(id, items) {
-  const el = document.getElementById(id);
-  if (!items.length) {
-    el.innerHTML = '<div class="empty">All chairs are currently available.</div>';
-    return;
+// --- ACTIONS ---
+function openChairModal(bookingId, custName) {
+  document.getElementById('assign-id').value = bookingId;
+  document.getElementById('assign-name').textContent = custName;
+  
+  // Find occupied chairs
+  const occupiedChairs = activeBookings.filter(b => b.status === 'active').map(b => b.chair_number);
+  
+  let gridHtml = '';
+  for(let i=1; i<=TOTAL_CHAIRS; i++) {
+    const isOcc = occupiedChairs.includes(i);
+    gridHtml += `<button class="chair-btn ${isOcc ? 'occupied' : ''}" 
+                 ${isOcc ? 'disabled' : `onclick="startService(${i})"`}>${i}</button>`;
   }
   
-  let html = '';
-  items.forEach(b => {
-    const pct = progressPct(b.start_time, b.end_time);
-    const chair = b.chair_number || '-';
+  document.getElementById('chair-grid').innerHTML = gridHtml;
+  document.getElementById('chair-modal').style.display = 'flex';
+}
+
+async function startService(chairNum) {
+  const bookingId = document.getElementById('assign-id').value;
+  closeModal('chair-modal');
+  
+  const { error } = await supabaseClient
+    .from('bookings')
+    .update({ status: 'active', chair_number: chairNum })
+    .eq('id', bookingId);
     
-    html += `
-    <div class="active-card">
-      <div class="ac-top">
-        <div class="chair-circle">
-          <span>Chair</span>
-          <strong>${chair}</strong>
-        </div>
-        <div class="ac-info">
-          <div class="ac-name">${b.customer_name}</div>
-          <div class="ac-service">${b.package_name || b.services || 'Premium Service'}</div>
-        </div>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-    </div>`;
-  });
-  
-  el.innerHTML = html;
+  if(error) alert(error.message);
+  else fetchData();
 }
 
-function renderQueueArea(id, items) {
-  const el = document.getElementById(id);
-  if (!items.length) {
-    el.innerHTML = '<div class="empty">No one is waiting at the moment.</div>';
-    return;
+async function updateStatus(bookingId, newStatus) {
+  if(!confirm(`Are you sure you want to mark this as ${newStatus}?`)) return;
+  
+  // If moving to completed or cancelled, we remove chair number so it frees up
+  const payload = { status: newStatus };
+  if(newStatus === 'completed' || newStatus === 'cancelled') {
+    payload.chair_number = null; 
+    // *NOTE*: Your database trigger should copy this to `booking_history` here.
   }
-  
-  let html = '';
-  items.forEach((b, index) => {
-    html += `
-    <div class="queue-item">
-      <div class="qi-num">${index + 1}</div>
-      <div class="qi-info">
-        <div class="qi-name">${b.customer_name}</div>
-        <div class="qi-service">${b.package_name || b.services || 'Service booked'}</div>
-      </div>
-      <div class="qi-eta">
-        <div class="qi-eta-label">Est. Time</div>
-        <div class="qi-eta-time">${fmtTime(b.start_time)}</div>
-      </div>
-    </div>`;
-  });
-  
-  el.innerHTML = html;
+
+  const { error } = await supabaseClient
+    .from('bookings')
+    .update(payload)
+    .eq('id', bookingId);
+
+  if(error) alert(error.message);
+  else fetchData();
 }
 </script>
 </body>
