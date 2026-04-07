@@ -11,7 +11,6 @@
 
   <style>
     :root {
-      /* Shared Colors */
       --gold: #B9975B;
       --gold-dim: #A3834C;
       --green: #528B6A;
@@ -19,12 +18,10 @@
       --text-dark: #2A2825;
       --text-light: #F4F2EC;
       
-      /* Staff Theme (Darker/Utility) */
-      --staff-bg: #1A1A1A;
-      --staff-surface: #242424;
-      --staff-border: #333333;
+      --staff-bg: #141414;
+      --staff-surface: #1E1E1E;
+      --staff-border: #2E2E2E;
       
-      /* TV Theme (Light/Elegant) */
       --tv-bg: #FBFaf7;
       --tv-surface: #FFFFFF;
       --tv-border: #EBE6DD;
@@ -39,193 +36,156 @@
       color: var(--text-light);
     }
 
-    /* ── SIDEBAR ── */
+    /* ── COLLAPSIBLE SIDEBAR ── */
     #sidebar {
       width: 260px;
-      background: #111;
+      background: #0A0A0A;
       border-right: 1px solid var(--staff-border);
       display: flex; flex-direction: column;
-      transition: width 0.3s;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       z-index: 100;
+      white-space: nowrap;
+      overflow: hidden;
     }
+    #sidebar.collapsed { width: 72px; }
+    
     .brand {
       padding: 24px;
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 24px; color: var(--gold);
+      height: 80px;
       border-bottom: 1px solid var(--staff-border);
       display: flex; align-items: center; justify-content: space-between;
     }
+    .brand-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 24px; color: var(--gold);
+      transition: opacity 0.2s;
+    }
+    #sidebar.collapsed .brand-text { opacity: 0; pointer-events: none; width: 0; }
+    
+    .toggle-btn {
+      background: transparent; border: none; color: #999; cursor: pointer;
+      font-size: 24px; padding: 4px; display: flex; align-items: center;
+      transition: color 0.2s;
+    }
+    .toggle-btn:hover { color: #FFF; }
+
     .nav-links { display: flex; flex-direction: column; padding: 16px 12px; gap: 8px; flex: 1; }
     .nav-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 16px; border-radius: 12px;
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px; border-radius: 12px;
       color: #999; text-decoration: none; cursor: pointer;
       transition: all 0.2s;
     }
     .nav-item:hover { background: rgba(255,255,255,0.05); color: #FFF; }
     .nav-item.active { background: var(--gold); color: #111; font-weight: 500; }
-    .nav-item i { font-size: 20px; }
+    .nav-item i { font-size: 22px; flex-shrink: 0; }
+    .nav-label { transition: opacity 0.2s; }
+    #sidebar.collapsed .nav-label { opacity: 0; pointer-events: none; }
 
-    /* Mobile Sidebar Bottom Nav */
     @media (max-width: 768px) {
       body { flex-direction: column-reverse; }
-      #sidebar { width: 100%; height: 70px; flex-direction: row; border-right: none; border-top: 1px solid var(--staff-border); }
+      #sidebar { width: 100% !important; height: 70px; flex-direction: row; border-right: none; border-top: 1px solid var(--staff-border); }
       .brand { display: none; }
-      .nav-links { flex-direction: row; padding: 8px; justify-content: space-around; }
-      .nav-item { flex-direction: column; gap: 4px; padding: 8px; font-size: 11px; }
+      .nav-links { flex-direction: row; padding: 8px; justify-content: space-around; width: 100%; }
+      .nav-item { flex-direction: column; gap: 4px; padding: 8px; font-size: 11px; justify-content: center; width: 100%; }
       .nav-item i { font-size: 24px; }
+      #sidebar.collapsed .nav-label { opacity: 1; } /* Always show labels on mobile bottom nav */
     }
 
     /* ── MAIN CONTENT AREA ── */
-    #main-content {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-    }
-    .view-container {
-      position: absolute; inset: 0;
-      display: none;
-      overflow-y: auto;
-    }
+    #main-content { flex: 1; position: relative; overflow: hidden; }
+    .view-container { position: absolute; inset: 0; display: none; overflow-y: auto; }
     .view-container.active { display: block; }
 
-    /* ==========================================================================
-       VIEW 1: STAFF OPERATIONS (Dark Theme, Mobile Optimized)
-       ========================================================================== */
-    #view-staff { padding: 24px; }
+    /* ── VIEW 1: STAFF OPERATIONS ── */
+    #view-staff { padding: 32px; }
     .staff-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .staff-title { font-size: 24px; font-weight: 600; color: #FFF; }
+    .staff-title { font-size: 28px; font-weight: 600; color: #FFF; }
     
-    .staff-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;
-    }
+    .staff-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px; }
     .staff-col {
       background: var(--staff-surface); border: 1px solid var(--staff-border);
       border-radius: 16px; display: flex; flex-direction: column;
-      max-height: calc(100vh - 100px);
+      max-height: calc(100vh - 120px);
     }
-    .staff-col-head { padding: 16px 20px; border-bottom: 1px solid var(--staff-border); font-weight: 500; display: flex; justify-content: space-between;}
-    .staff-col-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    .staff-col-head { padding: 20px; border-bottom: 1px solid var(--staff-border); font-weight: 500; display: flex; justify-content: space-between; font-size: 18px;}
+    .staff-col-body { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
 
-    .staff-card {
-      background: #1E1E1E; border: 1px solid var(--staff-border);
-      border-radius: 12px; padding: 16px;
-    }
-    .sc-top { display: flex; justify-content: space-between; margin-bottom: 8px; }
-    .sc-name { font-size: 18px; font-weight: 500; color: #FFF; }
-    .sc-service { font-size: 13px; color: #999; margin-bottom: 16px; }
-    .sc-actions { display: flex; gap: 8px; }
+    .staff-card { background: #262626; border: 1px solid var(--staff-border); border-radius: 12px; padding: 20px; }
+    .sc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .sc-name { font-size: 20px; font-weight: 500; color: #FFF; }
+    .sc-service { font-size: 14px; color: #999; margin-bottom: 16px; }
+    .sc-actions { display: flex; gap: 8px; margin-top: 16px; }
     
-    .btn {
-      flex: 1; padding: 10px; border-radius: 8px; border: none; cursor: pointer;
-      font-weight: 500; font-size: 13px; transition: opacity 0.2s;
+    /* Quick Assign Buttons */
+    .quick-assign-label { font-size: 11px; color: #888; letter-spacing: 0.05em; margin-bottom: 8px; display: block; text-transform: uppercase; }
+    .mini-chair-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .mini-chair-btn {
+      width: 40px; height: 40px; border-radius: 8px;
+      background: #1A1A1A; border: 1px solid #444; color: #FFF;
+      font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; justify-content: center;
     }
-    .btn:hover { opacity: 0.8; }
-    .btn-green { background: var(--green); color: #FFF; }
-    .btn-gold { background: var(--gold); color: #111; }
-    .btn-outline { background: transparent; border: 1px solid var(--staff-border); color: #FFF; }
+    .mini-chair-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(185, 151, 91, 0.1); transform: translateY(-2px); }
 
-    /* ==========================================================================
-       VIEW 2: WAITING AREA TV (Light Premium Theme)
-       ========================================================================== */
-    #view-tv {
-      background: var(--tv-bg);
-      color: var(--text-dark);
-      padding: 32px;
-    }
-    .tv-shell {
-      display: grid; grid-template-rows: auto 1fr; gap: 32px; height: 100%;
-      max-width: 1800px; margin: 0 auto;
-    }
-    .tv-header {
-      display: flex; align-items: center; justify-content: space-between;
-      background: var(--tv-surface); border: 1px solid var(--tv-border);
-      border-radius: 20px; padding: 20px 32px; box-shadow: 0 12px 40px rgba(0,0,0,0.04);
-    }
+    .btn { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; font-size: 14px; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.8; }
+    .btn-green { background: var(--green); color: #FFF; flex: 1; }
+    .btn-outline { background: transparent; border: 1px solid var(--staff-border); color: #CCC; }
+    .btn-outline:hover { background: rgba(255,255,255,0.05); color: #FFF; }
+
+    /* ── VIEW 2: TV DISPLAY (UNCHANGED) ── */
+    #view-tv { background: var(--tv-bg); color: var(--text-dark); padding: 32px; }
+    .tv-shell { display: grid; grid-template-rows: auto 1fr; gap: 32px; height: 100%; max-width: 1800px; margin: 0 auto; }
+    .tv-header { display: flex; align-items: center; justify-content: space-between; background: var(--tv-surface); border: 1px solid var(--tv-border); border-radius: 20px; padding: 20px 32px; box-shadow: 0 12px 40px rgba(0,0,0,0.04); }
     .tv-brand { font-family: 'Cormorant Garamond', serif; font-size: 36px; color: var(--gold); font-weight: 600; }
     .tv-brand span { color: var(--text-dark); font-weight: 400; }
     .tv-time { font-family: 'DM Mono', monospace; font-size: 28px; text-align: right; }
     .tv-date { font-size: 13px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.05em; }
-
     .tv-body { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; min-height: 0; }
-    .tv-panel {
-      background: var(--tv-surface); border: 1px solid var(--tv-border);
-      border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.04);
-      display: flex; flex-direction: column; overflow: hidden;
-    }
+    .tv-panel { background: var(--tv-surface); border: 1px solid var(--tv-border); border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.04); display: flex; flex-direction: column; overflow: hidden; }
     .tv-panel-head { padding: 24px 32px; border-bottom: 1px solid var(--tv-border); background: #FAFAFA; font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; }
     .tv-panel-body { padding: 32px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
-
-    /* TV Cards */
-    .tv-active-card {
-      display: flex; align-items: center; gap: 20px; padding: 20px;
-      border: 1px solid var(--tv-border); border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-    }
-    .tv-chair {
-      width: 64px; height: 64px; border-radius: 50%; background: rgba(185,151,91,0.1); border: 1px solid rgba(185,151,91,0.3);
-      display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gold-dim);
-    }
+    .tv-active-card { display: flex; align-items: center; gap: 20px; padding: 20px; border: 1px solid var(--tv-border); border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+    .tv-chair { width: 64px; height: 64px; border-radius: 50%; background: rgba(185,151,91,0.1); border: 1px solid rgba(185,151,91,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gold-dim); }
     .tv-chair span { font-size: 10px; text-transform: uppercase; font-weight: 600; }
     .tv-chair strong { font-family: 'Cormorant Garamond', serif; font-size: 28px; line-height: 1; }
     .tv-ac-name { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; }
-    
-    .tv-queue-card {
-      display: flex; align-items: center; gap: 16px; padding: 16px 20px;
-      border: 1px solid #F4F2EC; border-radius: 12px; background: #FFF;
-    }
+    .tv-queue-card { display: flex; align-items: center; gap: 16px; padding: 16px 20px; border: 1px solid #F4F2EC; border-radius: 12px; background: #FFF; }
     .tv-q-num { font-family: 'DM Mono', monospace; font-size: 18px; color: var(--gold-dim); width: 30px; }
     .tv-q-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; flex: 1; }
 
-    /* ==========================================================================
-       MODALS & OVERLAYS
-       ========================================================================== */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 999;
-      display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);
-    }
-    .modal {
-      background: var(--staff-surface); border: 1px solid var(--staff-border);
-      border-radius: 16px; padding: 24px; width: 400px;
-    }
-    .modal h3 { font-size: 20px; margin-bottom: 16px; color: #FFF; }
-    .chair-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-    .chair-btn {
-      padding: 16px; background: #111; border: 1px solid var(--staff-border);
-      border-radius: 8px; color: #FFF; cursor: pointer; text-align: center;
-      font-family: 'DM Mono', monospace; font-size: 18px;
-    }
-    .chair-btn:hover { border-color: var(--gold); color: var(--gold); }
-    .chair-btn.occupied { opacity: 0.3; cursor: not-allowed; border-color: var(--red); color: var(--red); }
+    /* ── SETUP OVERLAY ── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+    .modal { background: var(--staff-surface); border: 1px solid var(--staff-border); border-radius: 16px; padding: 32px; width: 400px; }
+    .modal h3 { font-size: 24px; margin-bottom: 24px; color: #FFF; }
+    .setup-input { width: 100%; padding: 14px; margin-bottom: 16px; border-radius: 8px; border: 1px solid #444; background: #111; color: #FFF; font-family: 'DM Mono', monospace; font-size: 14px; }
+    .setup-input:focus { outline: none; border-color: var(--gold); }
   </style>
 </head>
 <body>
 
-  <div class="modal-overlay" id="setup-modal" style="display:flex;">
+  <div class="modal-overlay" id="setup-modal">
     <div class="modal">
       <h3>System Setup</h3>
-      <input id="cfg-url" type="text" placeholder="Supabase URL" style="width:100%; padding:12px; margin-bottom:12px; border-radius:8px; border:1px solid #333; background:#111; color:#FFF;">
-      <input id="cfg-key" type="password" placeholder="Anon Key" style="width:100%; padding:12px; margin-bottom:24px; border-radius:8px; border:1px solid #333; background:#111; color:#FFF;">
-      <button class="btn btn-gold" style="width:100%" onclick="initApp()">Connect to Database</button>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="chair-modal">
-    <div class="modal">
-      <h3>Select Chair for <span id="assign-name" style="color:var(--gold);"></span></h3>
-      <input type="hidden" id="assign-id">
-      <div class="chair-grid" id="chair-grid"></div>
-      <button class="btn btn-outline" style="width:100%" onclick="closeModal('chair-modal')">Cancel</button>
+      <input id="cfg-url" class="setup-input" type="text" placeholder="Supabase URL">
+      <input id="cfg-key" class="setup-input" type="password" placeholder="Anon Key">
+      <button class="btn" style="width:100%; background:var(--gold); color:#111; font-weight:600;" onclick="initApp()">Connect Database</button>
     </div>
   </div>
 
   <nav id="sidebar">
-    <div class="brand">Salon OS</div>
+    <div class="brand">
+      <div class="brand-text">Salon OS</div>
+      <button class="toggle-btn" onclick="toggleSidebar()"><i class="ph ph-list"></i></button>
+    </div>
     <div class="nav-links">
       <a class="nav-item active" onclick="switchView('staff', this)">
-        <i class="ph ph-users-three"></i> Staff Operations
+        <i class="ph ph-users-three"></i> <span class="nav-label">Staff Operations</span>
       </a>
       <a class="nav-item" onclick="switchView('tv', this)">
-        <i class="ph ph-monitor-play"></i> Waiting Area TV
+        <i class="ph ph-monitor-play"></i> <span class="nav-label">Waiting Area TV</span>
       </a>
     </div>
   </nav>
@@ -240,12 +200,12 @@
       
       <div class="staff-grid">
         <div class="staff-col">
-          <div class="staff-col-head"><span>In Queue</span> <span id="staff-q-count" style="color:var(--gold);">0</span></div>
+          <div class="staff-col-head"><span>In Queue</span> <span id="staff-q-count" style="color:var(--gold); font-family:'DM Mono';">0</span></div>
           <div class="staff-col-body" id="staff-queued-list"></div>
         </div>
         
         <div class="staff-col" style="border-color: rgba(82, 139, 106, 0.4);">
-          <div class="staff-col-head"><span>Active Now</span> <span id="staff-a-count" style="color:var(--green);">0</span></div>
+          <div class="staff-col-head"><span>Active in Chair</span> <span id="staff-a-count" style="color:var(--green); font-family:'DM Mono';">0</span></div>
           <div class="staff-col-body" id="staff-active-list"></div>
         </div>
       </div>
@@ -278,7 +238,19 @@
 <script>
 let supabaseClient = null;
 let activeBookings = [];
-const TOTAL_CHAIRS = 6;
+let totalChairs = 6; // Fallback, will be updated from DB
+
+// --- UI TOGGLES ---
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+}
+
+function switchView(viewId, el) {
+  document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(`view-${viewId}`).classList.add('active');
+  el.classList.add('active');
+}
 
 // --- CLOCK ---
 setInterval(() => {
@@ -286,19 +258,6 @@ setInterval(() => {
   document.getElementById('clock').textContent = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
   document.getElementById('date-str').textContent = d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
 }, 1000);
-
-// --- NAVIGATION ---
-function switchView(viewId, el) {
-  document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  
-  document.getElementById(`view-${viewId}`).classList.add('active');
-  el.classList.add('active');
-}
-
-function closeModal(id) {
-  document.getElementById(id).style.display = 'none';
-}
 
 // --- INIT & FETCH ---
 async function initApp() {
@@ -309,18 +268,39 @@ async function initApp() {
   supabaseClient = supabase.createClient(url, key);
   document.getElementById('setup-modal').style.display = 'none';
   
+  // 1. Fetch dynamic settings (Chairs)
+  await fetchSettings();
+  
+  // 2. Fetch bookings
   await fetchData();
   
-  // Realtime
+  // 3. Listen for live changes
   supabaseClient.channel('custom-all-channel')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => fetchData())
     .subscribe();
 }
 
+async function fetchSettings() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('admin_salon_settings')
+      .select('concurrent_chairs')
+      .eq('active', true)
+      .limit(1)
+      .single();
+      
+    if (data && data.concurrent_chairs) {
+      totalChairs = data.concurrent_chairs;
+      console.log(`Loaded settings: ${totalChairs} chairs available.`);
+    }
+  } catch (err) {
+    console.warn("Could not fetch admin settings, defaulting to 6 chairs.", err);
+  }
+}
+
 async function fetchData() {
   const today = new Date().toISOString().split('T')[0];
   
-  // Using the view_dashboard from your previous prompt to get customer names
   const { data, error } = await supabaseClient
     .from('view_dashboard')
     .select('*')
@@ -337,35 +317,58 @@ async function fetchData() {
 function renderAll() {
   const queued = activeBookings.filter(b => ['pending', 'queued', 'confirmed'].includes(b.status));
   const active = activeBookings.filter(b => b.status === 'active');
+  const occupiedChairs = active.map(b => b.chair_number);
 
-  // Staff Counters
+  // Counters
   document.getElementById('staff-q-count').textContent = queued.length;
   document.getElementById('staff-a-count').textContent = active.length;
 
-  // Render Staff UI
-  document.getElementById('staff-queued-list').innerHTML = queued.map(b => `
-    <div class="staff-card">
-      <div class="sc-top"><div class="sc-name">${b.customer_name}</div></div>
-      <div class="sc-service">${b.package_name || 'Custom Service'} • ${b.total_duration_minutes}m</div>
-      <div class="sc-actions">
-        <button class="btn btn-gold" onclick="openChairModal(${b.booking_id}, '${b.customer_name}')">Assign Chair & Start</button>
-        <button class="btn btn-outline" style="flex:0.3" onclick="updateStatus(${b.booking_id}, 'cancelled')">Cancel</button>
-      </div>
-    </div>`).join('') || '<div style="color:#666; text-align:center;">No bookings in queue.</div>';
+  // --- STAFF QUEUE RENDER (Single-Click Assign Logic) ---
+  document.getElementById('staff-queued-list').innerHTML = queued.map(b => {
+    // Generate available chair buttons for this specific booking
+    let quickAssignBtns = '';
+    for(let i = 1; i <= totalChairs; i++) {
+      if(!occupiedChairs.includes(i)) {
+        quickAssignBtns += `<button class="mini-chair-btn" onclick="startService(${b.booking_id}, ${i})" title="Assign to Chair ${i}">${i}</button>`;
+      }
+    }
+    
+    // If no chairs are free, show a message instead of buttons
+    if (!quickAssignBtns) {
+      quickAssignBtns = `<span style="color:#D65C5C; font-size:13px; font-weight:500;">All chairs currently occupied</span>`;
+    }
 
-  document.getElementById('staff-active-list').innerHTML = active.map(b => `
-    <div class="staff-card" style="border-left: 3px solid var(--green);">
+    return `
+    <div class="staff-card">
       <div class="sc-top">
         <div class="sc-name">${b.customer_name}</div>
-        <div style="font-family:'DM Mono'; color:var(--green)">Chair ${b.chair_number}</div>
+        <button class="btn-outline" style="padding: 6px 12px; font-size:12px; border-radius:6px; margin:0;" onclick="updateStatus(${b.booking_id}, 'cancelled')">Cancel</button>
+      </div>
+      <div class="sc-service">${b.package_name || 'Custom Service'} • ${Math.round(b.total_duration_minutes || 0)}m</div>
+      
+      <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid #333;">
+        <span class="quick-assign-label">Quick Start on Available Chair:</span>
+        <div class="mini-chair-grid">
+          ${quickAssignBtns}
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<div style="color:#666; text-align:center; padding:20px;">No bookings in queue.</div>';
+
+  // --- STAFF ACTIVE RENDER ---
+  document.getElementById('staff-active-list').innerHTML = active.map(b => `
+    <div class="staff-card" style="border-left: 4px solid var(--green);">
+      <div class="sc-top">
+        <div class="sc-name">${b.customer_name}</div>
+        <div style="font-family:'DM Mono'; font-size:18px; color:var(--green); font-weight:500;">Chair ${b.chair_number}</div>
       </div>
       <div class="sc-service">${b.package_name || 'Custom Service'}</div>
       <div class="sc-actions">
-        <button class="btn btn-green" onclick="updateStatus(${b.booking_id}, 'completed')">Mark Complete</button>
+        <button class="btn btn-green" onclick="updateStatus(${b.booking_id}, 'completed')"><i class="ph ph-check-circle" style="vertical-align:middle; margin-right:4px; font-size:18px;"></i> Mark Complete</button>
       </div>
-    </div>`).join('') || '<div style="color:#666; text-align:center;">No active chairs.</div>';
+    </div>`).join('') || '<div style="color:#666; text-align:center; padding:20px;">No active chairs.</div>';
 
-  // Render TV UI
+  // --- TV RENDER ---
   document.getElementById('tv-active-list').innerHTML = active.map(b => `
     <div class="tv-active-card">
       <div class="tv-chair"><span>Chair</span><strong>${b.chair_number}</strong></div>
@@ -379,50 +382,28 @@ function renderAll() {
     <div class="tv-queue-card">
       <div class="tv-q-num">${i + 1}</div>
       <div class="tv-q-name">${b.customer_name}</div>
-      <div style="font-family:'DM Mono'; color:var(--muted);">${new Date(b.start_time).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+      <div style="font-family:'DM Mono'; color:var(--muted); font-size: 16px;">${new Date(b.start_time).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
     </div>`).join('') || '<div style="padding:40px; text-align:center; color:var(--muted); font-style:italic; font-size:20px;">Queue is empty.</div>';
 }
 
 // --- ACTIONS ---
-function openChairModal(bookingId, custName) {
-  document.getElementById('assign-id').value = bookingId;
-  document.getElementById('assign-name').textContent = custName;
-  
-  // Find occupied chairs
-  const occupiedChairs = activeBookings.filter(b => b.status === 'active').map(b => b.chair_number);
-  
-  let gridHtml = '';
-  for(let i=1; i<=TOTAL_CHAIRS; i++) {
-    const isOcc = occupiedChairs.includes(i);
-    gridHtml += `<button class="chair-btn ${isOcc ? 'occupied' : ''}" 
-                 ${isOcc ? 'disabled' : `onclick="startService(${i})"`}>${i}</button>`;
-  }
-  
-  document.getElementById('chair-grid').innerHTML = gridHtml;
-  document.getElementById('chair-modal').style.display = 'flex';
-}
-
-async function startService(chairNum) {
-  const bookingId = document.getElementById('assign-id').value;
-  closeModal('chair-modal');
-  
+async function startService(bookingId, chairNum) {
+  // Single click instantly assigns and starts the service
   const { error } = await supabaseClient
     .from('bookings')
     .update({ status: 'active', chair_number: chairNum })
     .eq('id', bookingId);
     
-  if(error) alert(error.message);
+  if(error) alert("Error assigning chair: " + error.message);
   else fetchData();
 }
 
 async function updateStatus(bookingId, newStatus) {
-  if(!confirm(`Are you sure you want to mark this as ${newStatus}?`)) return;
+  if(!confirm(`Mark this booking as ${newStatus.toUpperCase()}?`)) return;
   
-  // If moving to completed or cancelled, we remove chair number so it frees up
   const payload = { status: newStatus };
   if(newStatus === 'completed' || newStatus === 'cancelled') {
-    payload.chair_number = null; 
-    // *NOTE*: Your database trigger should copy this to `booking_history` here.
+    payload.chair_number = null; // Free up the chair
   }
 
   const { error } = await supabaseClient
@@ -430,7 +411,7 @@ async function updateStatus(bookingId, newStatus) {
     .update(payload)
     .eq('id', bookingId);
 
-  if(error) alert(error.message);
+  if(error) alert("Error updating status: " + error.message);
   else fetchData();
 }
 </script>
