@@ -3,28 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Salon Dashboard</title>
+  <title>Salon Display</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
-      --bg:        #0d0d0e;
-      --surface:   #141416;
-      --surface2:  #1c1c20;
-      --border:    #2a2a30;
-      --gold:      #c9a84c;
-      --gold-dim:  #8a6e2f;
-      --gold-glow: rgba(201,168,76,0.15);
-      --text:      #f0ece4;
-      --muted:     #7a7670;
-      --green:     #4caf7d;
-      --amber:     #e8a838;
-      --red:       #e05555;
-      --blue:      #5b8fd4;
-      --purple:    #9b72d4;
-      --card-r:    14px;
+      /* Premium Light Theme */
+      --bg:        #FBFaf7;
+      --surface:   #FFFFFF;
+      --surface2:  #F4F2EC;
+      --border:    #EBE6DD;
+      --gold:      #B9975B;
+      --gold-dim:  #A3834C;
+      --gold-glow: rgba(185, 151, 91, 0.1);
+      --text:      #2A2825;
+      --muted:     #8C877E;
+      --green:     #528B6A;
+      --amber:     #D99648;
+      --card-r:    20px;
+      --shadow:    0 12px 40px rgba(0, 0, 0, 0.04);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,15 +33,15 @@
       background: var(--bg);
       color: var(--text);
       font-family: 'Outfit', sans-serif;
-      font-size: 15px;
+      font-size: 16px;
       overflow: hidden;
     }
 
-    /* ── NOISE OVERLAY ── */
+    /* ── NOISE OVERLAY (Subtle for texture) ── */
     body::before {
       content: '';
       position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
       pointer-events: none; z-index: 0;
     }
 
@@ -50,10 +49,12 @@
     .shell {
       position: relative; z-index: 1;
       display: grid;
-      grid-template-rows: 72px 1fr;
+      grid-template-rows: 90px 1fr;
       height: 100vh;
-      padding: 12px;
-      gap: 10px;
+      padding: 24px 32px;
+      gap: 24px;
+      max-width: 1800px;
+      margin: 0 auto;
     }
 
     /* ── HEADER ── */
@@ -64,471 +65,307 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--card-r);
-      padding: 0 24px;
-      position: relative;
-      overflow: hidden;
-    }
-    header::after {
-      content: '';
-      position: absolute; left: 0; top: 0; bottom: 0;
-      width: 3px;
-      background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dim) 100%);
+      padding: 0 32px;
+      box-shadow: var(--shadow);
     }
 
     .salon-name {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 26px;
+      font-size: 32px;
       font-weight: 600;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
       color: var(--gold);
     }
-    .salon-name span { color: var(--text); font-weight: 300; }
+    .salon-name span { color: var(--text); font-weight: 400; }
 
     .header-center {
       display: flex; align-items: center; gap: 20px;
     }
 
     .live-pill {
-      display: flex; align-items: center; gap: 6px;
-      background: rgba(76,175,125,0.12);
-      border: 1px solid rgba(76,175,125,0.35);
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(82, 139, 106, 0.08);
+      border: 1px solid rgba(82, 139, 106, 0.2);
       border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 11px;
-      font-family: 'DM Mono', monospace;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 500;
       letter-spacing: 0.1em;
       color: var(--green);
       text-transform: uppercase;
     }
     .live-dot {
-      width: 7px; height: 7px;
+      width: 8px; height: 8px;
       border-radius: 50%;
       background: var(--green);
-      animation: pulse 1.8s ease-in-out infinite;
+      animation: pulse 2s ease-in-out infinite;
     }
     @keyframes pulse {
-      0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(76,175,125,0.6); }
-      50%      { opacity: 0.7; box-shadow: 0 0 0 5px rgba(76,175,125,0); }
+      0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(82, 139, 106, 0.4); }
+      50%      { opacity: 0.6; box-shadow: 0 0 0 6px rgba(82, 139, 106, 0); }
     }
 
     #clock {
       font-family: 'DM Mono', monospace;
-      font-size: 22px;
-      font-weight: 300;
+      font-size: 26px;
+      font-weight: 400;
       color: var(--text);
-      letter-spacing: 0.04em;
+      letter-spacing: 0.02em;
     }
     #date-str {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--muted);
-      letter-spacing: 0.08em;
-      font-family: 'Outfit', sans-serif;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
       text-align: right;
+      margin-top: 2px;
     }
 
-    /* ── BODY GRID ── */
+    /* ── BODY GRID (2 Columns for Customers) ── */
     .body {
       display: grid;
-      grid-template-columns: 340px 1fr 260px;
-      gap: 10px;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 24px;
       min-height: 0;
     }
 
-    /* ── PANEL ── */
+    /* ── PANELS ── */
     .panel {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--card-r);
+      box-shadow: var(--shadow);
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
     .panel-head {
-      padding: 14px 18px 12px;
+      padding: 24px 32px 16px;
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
       flex-shrink: 0;
+      background: #FAFAFA;
     }
     .panel-title {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 15px;
+      font-size: 24px;
       font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--gold);
+      letter-spacing: 0.04em;
+      color: var(--text);
     }
     .panel-count {
       background: var(--gold-glow);
-      border: 1px solid var(--gold-dim);
-      color: var(--gold);
+      color: var(--gold-dim);
       font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      border-radius: 10px;
-      padding: 2px 8px;
-      min-width: 24px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 12px;
+      padding: 4px 12px;
+      min-width: 32px;
       text-align: center;
     }
     .panel-body {
       flex: 1; overflow-y: auto;
-      padding: 10px;
-      display: flex; flex-direction: column; gap: 8px;
+      padding: 24px 32px;
+      display: flex; flex-direction: column; gap: 16px;
     }
-    .panel-body::-webkit-scrollbar { width: 4px; }
+    
+    /* Scrollbar */
+    .panel-body::-webkit-scrollbar { width: 6px; }
     .panel-body::-webkit-scrollbar-track { background: transparent; }
-    .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .panel-body::-webkit-scrollbar-thumb { background: #E0DCD3; border-radius: 4px; }
 
-    /* ── BOOKING CARD ── */
-    .booking-card {
-      background: var(--surface2);
+    /* ── ACTIVE CARDS (Currently Serving) ── */
+    .active-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .active-card {
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 13px 14px;
+      border-radius: 16px;
+      padding: 20px;
       position: relative;
       overflow: hidden;
-      animation: fadeSlide 0.4s ease forwards;
-      transition: border-color 0.3s;
+      animation: fadeSlide 0.5s ease forwards;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.02);
     }
     @keyframes fadeSlide {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .booking-card::before {
-      content: '';
-      position: absolute; left: 0; top: 0; bottom: 0;
-      width: 3px;
+    
+    .ac-top {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
     }
-    .booking-card.status-active::before   { background: var(--green); }
-    .booking-card.status-queued::before   { background: var(--amber); }
-    .booking-card.status-completed::before{ background: var(--muted); }
-    .booking-card.status-cancelled::before{ background: var(--red); }
-    .booking-card.status-pending::before  { background: var(--blue); }
-
-    .card-top {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      margin-bottom: 8px;
-    }
-    .customer-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 18px;
-      font-weight: 600;
-      line-height: 1.1;
-      color: var(--text);
-    }
-    .chair-badge {
+    .chair-circle {
+      width: 54px; height: 54px;
+      border-radius: 50%;
       background: var(--gold-glow);
-      border: 1px solid var(--gold-dim);
-      color: var(--gold);
-      font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 6px;
-      white-space: nowrap;
+      border: 1px solid rgba(185, 151, 91, 0.3);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--gold-dim);
+      flex-shrink: 0;
     }
-
-    .membership-tag {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 10px;
-      letter-spacing: 0.06em;
-      color: var(--purple);
-      background: rgba(155,114,212,0.1);
-      border: 1px solid rgba(155,114,212,0.25);
-      border-radius: 4px;
-      padding: 1px 7px;
+    .chair-circle span { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-bottom: -2px; }
+    .chair-circle strong { font-family: 'Cormorant Garamond', serif; font-size: 24px; line-height: 1; font-weight: 600; }
+    
+    .ac-info { flex: 1; overflow: hidden; }
+    .ac-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ac-service {
+      font-size: 13px;
+      color: var(--muted);
       margin-top: 2px;
-      text-transform: uppercase;
-      font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-
-    .card-services {
-      font-size: 12px;
-      color: var(--muted);
-      margin: 6px 0 8px;
-      line-height: 1.4;
-    }
-    .card-services strong { color: var(--text); }
-
-    .card-meta {
-      display: flex; flex-wrap: wrap; gap: 6px;
+    .ac-time {
       font-family: 'DM Mono', monospace;
-      font-size: 11px;
+      font-size: 12px;
+      color: var(--green);
+      text-align: right;
     }
-    .meta-pill {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      padding: 2px 8px;
-      color: var(--muted);
-    }
-    .meta-pill span { color: var(--text); }
 
     .progress-bar {
-      margin-top: 9px;
-      height: 3px;
-      background: var(--border);
+      height: 4px;
+      background: var(--surface2);
       border-radius: 2px;
       overflow: hidden;
     }
     .progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, var(--green), #a8e6c2);
+      background: linear-gradient(90deg, var(--gold), #D4B886);
       border-radius: 2px;
-      transition: width 10s linear;
+      transition: width 1s linear;
     }
 
-    /* ── MIDDLE (CHAIRS GRID) ── */
-    .middle {
-      display: flex; flex-direction: column; gap: 10px;
-    }
-
-    /* Stats row */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      flex-shrink: 0;
-    }
-    .stat-card {
+    /* ── QUEUE CARDS (Up Next) ── */
+    .queue-list { display: flex; flex-direction: column; gap: 12px; }
+    
+    .queue-item {
+      display: flex; align-items: center; gap: 16px;
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--card-r);
-      padding: 14px 16px;
-      display: flex; flex-direction: column; gap: 4px;
+      border: 1px solid var(--surface2);
+      border-radius: 12px;
+      padding: 16px 20px;
+      animation: fadeSlide 0.5s ease forwards;
+      transition: border-color 0.3s;
     }
-    .stat-label {
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .stat-value {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 30px;
-      font-weight: 700;
-      line-height: 1;
-      color: var(--text);
-    }
-    .stat-value.gold { color: var(--gold); }
-    .stat-value.green { color: var(--green); }
-    .stat-sub {
-      font-size: 10px;
-      color: var(--muted);
-    }
-
-    /* Chairs panel */
-    .chairs-panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--card-r);
-      flex: 1; overflow: hidden;
-      display: flex; flex-direction: column;
-    }
-    .chairs-grid {
-      flex: 1;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 10px;
-      padding: 14px;
-      overflow-y: auto;
-      align-content: start;
-    }
-
-    .chair-card {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
-      display: flex; flex-direction: column; gap: 6px;
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.4s, background 0.4s;
-      min-height: 110px;
-    }
-    .chair-card.occupied {
-      border-color: rgba(76,175,125,0.4);
-      background: rgba(76,175,125,0.05);
-    }
-    .chair-card.free {
-      background: rgba(255,255,255,0.015);
-      border-color: var(--border);
-    }
-
-    .chair-num {
+    .queue-item:hover { border-color: var(--gold-dim); }
+    
+    .qi-num {
       font-family: 'DM Mono', monospace;
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-    }
-    .chair-status {
-      font-size: 11px;
+      font-size: 16px;
       font-weight: 500;
-      letter-spacing: 0.06em;
+      color: var(--muted);
+      width: 24px;
+      text-align: center;
     }
-    .chair-status.occupied { color: var(--green); }
-    .chair-status.free     { color: var(--muted); }
-
-    .chair-client {
+    .qi-info { flex: 1; }
+    .qi-name {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 15px;
+      font-size: 20px;
       font-weight: 600;
       color: var(--text);
-      line-height: 1.1;
     }
-    .chair-service {
-      font-size: 10px;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .chair-time {
-      font-family: 'DM Mono', monospace;
-      font-size: 10px;
-      color: var(--amber);
-    }
-
-    /* ── RIGHT PANEL: COMPLETED TODAY ── */
-    .payment-badge {
-      font-size: 9px;
-      padding: 1px 6px;
-      border-radius: 4px;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      font-weight: 500;
-    }
-    .pay-membership { background: rgba(155,114,212,0.15); color: var(--purple); border: 1px solid rgba(155,114,212,0.3); }
-    .pay-manual     { background: rgba(91,143,212,0.15);  color: var(--blue);   border: 1px solid rgba(91,143,212,0.3); }
-    .pay-mixed      { background: rgba(232,168,56,0.15);  color: var(--amber);  border: 1px solid rgba(232,168,56,0.3); }
-
-    .completed-card {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 11px 12px;
-      animation: fadeSlide 0.4s ease forwards;
-    }
-    .cc-top {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      margin-bottom: 5px;
-    }
-    .cc-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 15px; font-weight: 600;
-      color: var(--text);
-    }
-    .cc-amount {
-      font-family: 'DM Mono', monospace;
+    .qi-service {
       font-size: 13px;
-      color: var(--gold);
+      color: var(--muted);
+      margin-top: 2px;
     }
-    .cc-meta {
-      font-size: 10px; color: var(--muted);
-      display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
-      margin-top: 4px;
+    .qi-eta {
+      text-align: right;
     }
-
-    /* ── REVENUE TICKER ── */
-    .revenue-row {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-shrink: 0;
+    .qi-eta-label {
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted);
     }
-    .rev-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
-    .rev-value {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 20px; font-weight: 700; color: var(--gold);
+    .qi-eta-time {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px; color: var(--text); font-weight: 500;
+      margin-top: 2px;
     }
 
     /* ── EMPTY STATE ── */
     .empty {
       text-align: center;
-      padding: 30px 16px;
+      padding: 60px 20px;
       color: var(--muted);
-      font-size: 12px;
-      letter-spacing: 0.06em;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px;
+      font-style: italic;
     }
 
     /* ── CONFIG OVERLAY ── */
     #config-overlay {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(8px);
+      background: rgba(253, 252, 248, 0.9);
+      backdrop-filter: blur(10px);
       z-index: 999;
       display: flex; align-items: center; justify-content: center;
     }
     #config-box {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 36px 40px;
-      width: 440px;
-      display: flex; flex-direction: column; gap: 16px;
+      border-radius: 24px;
+      padding: 40px 48px;
+      width: 480px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.06);
+      display: flex; flex-direction: column; gap: 20px;
     }
     #config-box h2 {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 24px; font-weight: 600;
-      color: var(--gold); letter-spacing: 0.04em;
+      font-size: 32px; font-weight: 600;
+      color: var(--gold);
     }
-    #config-box p { font-size: 12px; color: var(--muted); line-height: 1.5; }
-    .cfg-label { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+    #config-box p { font-size: 14px; color: var(--muted); line-height: 1.5; }
+    .cfg-label { font-size: 12px; color: var(--text); font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; }
     .cfg-input {
       width: 100%;
-      background: var(--bg);
+      background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 10px;
       color: var(--text);
       font-family: 'DM Mono', monospace;
-      font-size: 12px;
-      padding: 10px 12px;
+      font-size: 13px;
+      padding: 12px 16px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: all 0.2s;
     }
-    .cfg-input:focus { border-color: var(--gold-dim); }
+    .cfg-input:focus { border-color: var(--gold); background: var(--surface); box-shadow: 0 0 0 3px var(--gold-glow); }
     .cfg-btn {
       background: var(--gold);
-      color: #000;
+      color: #FFF;
       border: none;
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: 10px;
+      padding: 16px;
       font-family: 'Outfit', sans-serif;
-      font-weight: 600;
-      font-size: 13px;
-      letter-spacing: 0.06em;
+      font-weight: 500;
+      font-size: 15px;
+      letter-spacing: 0.04em;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s, transform 0.2s;
+      margin-top: 8px;
     }
-    .cfg-btn:hover { opacity: 0.88; }
-    .cfg-err { color: var(--red); font-size: 11px; display: none; }
+    .cfg-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .cfg-err { color: #D65C5C; font-size: 13px; display: none; background: #FEF2F2; padding: 10px; border-radius: 8px; border: 1px solid #FCA5A5; }
 
-    /* ── STATUS CHIPS ── */
-    .status-chip {
-      font-size: 9px;
-      padding: 1px 7px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      font-weight: 600;
-    }
-    .chip-active    { background: rgba(76,175,125,0.15); color: var(--green); border: 1px solid rgba(76,175,125,0.3); }
-    .chip-queued    { background: rgba(232,168,56,0.15);  color: var(--amber); border: 1px solid rgba(232,168,56,0.3); }
-    .chip-completed { background: rgba(122,118,112,0.15); color: var(--muted); border: 1px solid var(--border); }
-    .chip-pending   { background: rgba(91,143,212,0.15);  color: var(--blue);  border: 1px solid rgba(91,143,212,0.3); }
-    .chip-cancelled { background: rgba(224,85,85,0.15);   color: var(--red);   border: 1px solid rgba(224,85,85,0.3); }
-
-    /* scrollbar for chairs */
-    .chairs-grid::-webkit-scrollbar { width: 4px; }
-    .chairs-grid::-webkit-scrollbar-track { background: transparent; }
-    .chairs-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
   </style>
 </head>
 <body>
 
-<!-- CONFIG OVERLAY -->
 <div id="config-overlay">
   <div id="config-box">
-    <h2>✦ Salon Dashboard</h2>
-    <p>Connect your Supabase project to start the live dashboard. Your credentials are stored only in this browser session.</p>
+    <h2>✦ Salon Setup</h2>
+    <p>Connect your Supabase project to display the live waiting area dashboard.</p>
     <div>
       <div class="cfg-label">Supabase Project URL</div>
       <input id="cfg-url" class="cfg-input" placeholder="https://xxxxxxxxxxxx.supabase.co" />
@@ -538,110 +375,56 @@
       <input id="cfg-key" class="cfg-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp..." />
     </div>
     <div>
-      <div class="cfg-label">Salon Name (optional)</div>
-      <input id="cfg-salon" class="cfg-input" placeholder="My Salon" />
-    </div>
-    <div>
-      <div class="cfg-label">Number of Chairs</div>
-      <input id="cfg-chairs" class="cfg-input" type="number" value="6" min="1" max="20" />
+      <div class="cfg-label">Salon Name</div>
+      <input id="cfg-salon" class="cfg-input" placeholder="Elegant Studio" />
     </div>
     <div class="cfg-err" id="cfg-err">⚠ Could not connect. Check your URL and key.</div>
-    <button class="cfg-btn" onclick="startDashboard()">Connect & Launch →</button>
+    <button class="cfg-btn" onclick="startDashboard()">Launch Display →</button>
   </div>
 </div>
 
-<!-- MAIN SHELL -->
 <div class="shell" id="main-shell" style="display:none;">
   <header>
-    <div class="salon-name" id="salon-label">Salon <span>Dashboard</span></div>
+    <div class="salon-name" id="salon-label">Elegant <span>Studio</span></div>
     <div class="header-center">
-      <div class="live-pill"><div class="live-dot"></div>Live</div>
+      <div class="live-pill"><div class="live-dot"></div>Live Updates</div>
     </div>
     <div style="text-align:right;">
-      <div id="clock">00:00:00</div>
+      <div id="clock">00:00</div>
       <div id="date-str"></div>
     </div>
   </header>
 
   <div class="body">
-    <!-- LEFT: Active + Queue -->
-    <div style="display:flex;flex-direction:column;gap:10px;min-height:0;">
-      <div class="panel" style="flex:1;min-height:0;">
-        <div class="panel-head">
-          <div class="panel-title">Active Now</div>
-          <div class="panel-count" id="active-count">0</div>
-        </div>
-        <div class="panel-body" id="active-list"></div>
+    
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Currently Serving</div>
+        <div class="panel-count" id="active-count">0</div>
       </div>
-      <div class="panel" style="flex:1;min-height:0;">
-        <div class="panel-head">
-          <div class="panel-title">In Queue</div>
-          <div class="panel-count" id="queue-count">0</div>
-        </div>
-        <div class="panel-body" id="queue-list"></div>
+      <div class="panel-body">
+        <div class="active-grid" id="active-list">
+          </div>
       </div>
     </div>
 
-    <!-- MIDDLE: Stats + Chairs -->
-    <div class="middle">
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-label">Active</div>
-          <div class="stat-value green" id="s-active">0</div>
-          <div class="stat-sub">In chair</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Queued</div>
-          <div class="stat-value" id="s-queued">0</div>
-          <div class="stat-sub">Waiting</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Completed</div>
-          <div class="stat-value" id="s-completed">0</div>
-          <div class="stat-sub">Today</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Revenue</div>
-          <div class="stat-value gold" id="s-revenue">₹0</div>
-          <div class="stat-sub">Today</div>
-        </div>
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Up Next</div>
+        <div class="panel-count" id="queue-count">0</div>
       </div>
-
-      <div class="chairs-panel">
-        <div class="panel-head">
-          <div class="panel-title">Chair Status</div>
-        </div>
-        <div class="chairs-grid" id="chairs-grid"></div>
+      <div class="panel-body">
+        <div class="queue-list" id="queue-list">
+          </div>
       </div>
     </div>
 
-    <!-- RIGHT: Completed today -->
-    <div style="display:flex;flex-direction:column;gap:10px;min-height:0;">
-      <div class="panel" style="flex:1;min-height:0;">
-        <div class="panel-head">
-          <div class="panel-title">Completed Today</div>
-          <div class="panel-count" id="completed-count">0</div>
-        </div>
-        <div class="panel-body" id="completed-list"></div>
-      </div>
-      <div class="revenue-row">
-        <div>
-          <div class="rev-label">Today's Revenue</div>
-          <div class="rev-value" id="rev-total">₹0</div>
-        </div>
-        <div style="text-align:right;">
-          <div class="rev-label">Savings Given</div>
-          <div style="font-family:'DM Mono',monospace;font-size:14px;color:var(--muted);" id="rev-savings">₹0</div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
 <script>
 // ── GLOBALS ──────────────────────────────────────────────
 let supabaseClient = null;
-let totalChairs = 6;
 let allBookings = [];
 let subscription = null;
 
@@ -650,7 +433,7 @@ const todayStr = () => new Date().toISOString().split('T')[0];
 // ── CLOCK ────────────────────────────────────────────────
 function tickClock() {
   const now = new Date();
-  const t = now.toLocaleTimeString('en-IN', { hour12: false });
+  const t = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
   const d = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   document.getElementById('clock').textContent = t;
   document.getElementById('date-str').textContent = d;
@@ -662,8 +445,7 @@ tickClock();
 async function startDashboard() {
   const url   = document.getElementById('cfg-url').value.trim();
   const key   = document.getElementById('cfg-key').value.trim();
-  const name  = document.getElementById('cfg-salon').value.trim() || 'Salon';
-  totalChairs = parseInt(document.getElementById('cfg-chairs').value) || 6;
+  const name  = document.getElementById('cfg-salon').value.trim() || 'Salon Studio';
 
   if (!url || !key) { showErr('Please fill in URL and Anon Key.'); return; }
 
@@ -677,9 +459,9 @@ async function startDashboard() {
     return;
   }
 
-  // set salon name
+  // set salon name formatting (First words bold, last word light)
   const parts = name.split(' ');
-  const last  = parts.pop();
+  const last  = parts.length > 1 ? parts.pop() : '';
   document.getElementById('salon-label').innerHTML =
     `${parts.join(' ')} <span>${last}</span>`;
 
@@ -688,8 +470,9 @@ async function startDashboard() {
 
   await fetchData();
   subscribeRealtime(url, key);
-  // poll every 30s as fallback
-  setInterval(fetchData, 30000);
+  
+  // Progress bar updater
+  setInterval(render, 30000); // re-render every 30s to update progress bars
 }
 
 function showErr(msg) {
@@ -726,47 +509,20 @@ function render() {
   const today = todayStr();
   const todays = allBookings.filter(b => b.booking_date === today);
 
-  const active    = todays.filter(b => b.status === 'active');
-  const pending   = todays.filter(b => ['pending','queued','confirmed'].includes(b.status));
-  const completed = todays.filter(b => b.status === 'completed');
-  const cancelled = todays.filter(b => b.status === 'cancelled');
+  const active  = todays.filter(b => b.status === 'active');
+  const pending = todays.filter(b => ['pending','queued','confirmed'].includes(b.status));
 
   // counts
   setCount('active-count', active.length);
   setCount('queue-count',  pending.length);
-  setCount('completed-count', completed.length);
-  document.getElementById('s-active').textContent    = active.length;
-  document.getElementById('s-queued').textContent    = pending.length;
-  document.getElementById('s-completed').textContent = completed.length;
 
-  // revenue
-  const rev = completed.reduce((s, b) => s + parseFloat(b.final_amount || 0), 0);
-  const sav = completed.reduce((s, b) => s + parseFloat(b.savings || 0), 0);
-  const revFmt = '₹' + Math.round(rev).toLocaleString('en-IN');
-  document.getElementById('s-revenue').textContent = revFmt;
-  document.getElementById('rev-total').textContent = revFmt;
-  document.getElementById('rev-savings').textContent = '₹' + Math.round(sav).toLocaleString('en-IN');
-
-  // render panels
-  renderList('active-list',    active,    renderActiveCard);
-  renderList('queue-list',     pending,   renderQueueCard);
-  renderList('completed-list', completed, renderCompletedCard);
-
-  // chairs
-  renderChairs(active);
+  // Render HTML
+  renderActiveArea('active-list', active);
+  renderQueueArea('queue-list', pending);
 }
 
 function setCount(id, n) {
   document.getElementById(id).textContent = n;
-}
-
-function renderList(id, items, fn) {
-  const el = document.getElementById(id);
-  if (!items.length) {
-    el.innerHTML = '<div class="empty">— None —</div>';
-    return;
-  }
-  el.innerHTML = items.map(fn).join('');
 }
 
 function fmtTime(iso) {
@@ -774,13 +530,8 @@ function fmtTime(iso) {
   return new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
 }
 
-function payBadge(mode) {
-  const map = { membership:'pay-membership', manual:'pay-manual', mixed:'pay-mixed' };
-  const cls = map[mode] || 'pay-manual';
-  return `<span class="payment-badge ${cls}">${mode || 'manual'}</span>`;
-}
-
 function progressPct(start, end) {
+  if (!start || !end) return 0;
   const now = Date.now();
   const s = new Date(start).getTime();
   const e = new Date(end).getTime();
@@ -789,101 +540,62 @@ function progressPct(start, end) {
   return Math.round(((now - s) / (e - s)) * 100);
 }
 
-function renderActiveCard(b) {
-  const pct = progressPct(b.start_time, b.end_time);
-  const mins = Math.round(b.total_duration_minutes || 0);
-  const mem = b.membership ? `<div class="membership-tag">★ ${b.membership}</div>` : '';
-  return `
-  <div class="booking-card status-active">
-    <div class="card-top">
-      <div>
-        <div class="customer-name">${b.customer_name}</div>
-        ${mem}
-      </div>
-      ${b.chair_number ? `<div class="chair-badge">Chair ${b.chair_number}</div>` : ''}
-    </div>
-    <div class="card-services"><strong>${b.package_name || 'Custom'}</strong><br>${b.services || '—'}</div>
-    <div class="card-meta">
-      <div class="meta-pill">⏱ <span>${fmtTime(b.start_time)} – ${fmtTime(b.end_time)}</span></div>
-      <div class="meta-pill"><span>${mins} min</span></div>
-      <div class="meta-pill">₹<span>${Math.round(b.final_amount || 0).toLocaleString('en-IN')}</span></div>
-      ${payBadge(b.payment_mode)}
-    </div>
-    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-  </div>`;
-}
-
-function renderQueueCard(b) {
-  const mins = Math.round(b.total_duration_minutes || 0);
-  const mem = b.membership ? `<div class="membership-tag">★ ${b.membership}</div>` : '';
-  const chipClass = b.status === 'pending' ? 'chip-pending' : 'chip-queued';
-  return `
-  <div class="booking-card status-queued">
-    <div class="card-top">
-      <div>
-        <div class="customer-name">${b.customer_name}</div>
-        ${mem}
-      </div>
-      <span class="status-chip ${chipClass}">${b.status}</span>
-    </div>
-    <div class="card-services"><strong>${b.package_name || 'Custom'}</strong><br>${b.services || '—'}</div>
-    <div class="card-meta">
-      <div class="meta-pill">⏱ <span>${fmtTime(b.start_time)}</span></div>
-      <div class="meta-pill"><span>${mins} min</span></div>
-      <div class="meta-pill">₹<span>${Math.round(b.final_amount || 0).toLocaleString('en-IN')}</span></div>
-    </div>
-  </div>`;
-}
-
-function renderCompletedCard(b) {
-  return `
-  <div class="completed-card">
-    <div class="cc-top">
-      <div class="cc-name">${b.customer_name}</div>
-      <div class="cc-amount">₹${Math.round(b.final_amount || 0).toLocaleString('en-IN')}</div>
-    </div>
-    <div class="cc-meta">
-      <span>${fmtTime(b.end_time)}</span>
-      <span>·</span>
-      <span>${b.package_name || 'Custom'}</span>
-      <span>·</span>
-      ${payBadge(b.payment_mode)}
-    </div>
-  </div>`;
-}
-
-// ── CHAIRS ───────────────────────────────────────────────
-function renderChairs(active) {
-  const grid = document.getElementById('chairs-grid');
-  const occupied = {};
-  active.forEach(b => {
-    if (b.chair_number) occupied[b.chair_number] = b;
-  });
-
-  let html = '';
-  for (let i = 1; i <= totalChairs; i++) {
-    const b = occupied[i];
-    if (b) {
-      const pct = progressPct(b.start_time, b.end_time);
-      const remaining = Math.max(0, Math.round((new Date(b.end_time) - Date.now()) / 60000));
-      html += `
-      <div class="chair-card occupied">
-        <div class="chair-num">CHAIR ${i}</div>
-        <div class="chair-status occupied">● In Service</div>
-        <div class="chair-client">${b.customer_name}</div>
-        <div class="chair-service">${(b.services || '').split(',')[0]}</div>
-        <div class="chair-time">~${remaining}m left</div>
-        <div class="progress-bar" style="margin-top:auto;"><div class="progress-fill" style="width:${pct}%"></div></div>
-      </div>`;
-    } else {
-      html += `
-      <div class="chair-card free">
-        <div class="chair-num">CHAIR ${i}</div>
-        <div class="chair-status free">○ Available</div>
-      </div>`;
-    }
+// ── RENDER TEMPLATES ─────────────────────────────────────
+function renderActiveArea(id, items) {
+  const el = document.getElementById(id);
+  if (!items.length) {
+    el.innerHTML = '<div class="empty">All chairs are currently available.</div>';
+    return;
   }
-  grid.innerHTML = html;
+  
+  let html = '';
+  items.forEach(b => {
+    const pct = progressPct(b.start_time, b.end_time);
+    const chair = b.chair_number || '-';
+    
+    html += `
+    <div class="active-card">
+      <div class="ac-top">
+        <div class="chair-circle">
+          <span>Chair</span>
+          <strong>${chair}</strong>
+        </div>
+        <div class="ac-info">
+          <div class="ac-name">${b.customer_name}</div>
+          <div class="ac-service">${b.package_name || b.services || 'Premium Service'}</div>
+        </div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  });
+  
+  el.innerHTML = html;
+}
+
+function renderQueueArea(id, items) {
+  const el = document.getElementById(id);
+  if (!items.length) {
+    el.innerHTML = '<div class="empty">No one is waiting at the moment.</div>';
+    return;
+  }
+  
+  let html = '';
+  items.forEach((b, index) => {
+    html += `
+    <div class="queue-item">
+      <div class="qi-num">${index + 1}</div>
+      <div class="qi-info">
+        <div class="qi-name">${b.customer_name}</div>
+        <div class="qi-service">${b.package_name || b.services || 'Service booked'}</div>
+      </div>
+      <div class="qi-eta">
+        <div class="qi-eta-label">Est. Time</div>
+        <div class="qi-eta-time">${fmtTime(b.start_time)}</div>
+      </div>
+    </div>`;
+  });
+  
+  el.innerHTML = html;
 }
 </script>
 </body>
