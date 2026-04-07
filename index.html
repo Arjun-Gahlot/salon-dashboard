@@ -18,9 +18,9 @@
       --text-dark: #2A2825;
       --text-light: #F4F2EC;
       
-      --staff-bg: #141414;
-      --staff-surface: #1E1E1E;
-      --staff-border: #2E2E2E;
+      --staff-bg: #0F0F0F;
+      --staff-surface: #181818;
+      --staff-border: #2A2A2A;
       
       --tv-bg: #FBFaf7;
       --tv-surface: #FFFFFF;
@@ -36,60 +36,57 @@
       color: var(--text-light);
     }
 
-    /* ── COLLAPSIBLE SIDEBAR ── */
+    /* ── COMPLETELY HIDDEN SIDEBAR ── */
     #sidebar {
-      width: 260px;
-      background: #0A0A0A;
+      width: 280px;
+      background: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(10px);
       border-right: 1px solid var(--staff-border);
       display: flex; flex-direction: column;
-      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 100;
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+      z-index: 900;
       white-space: nowrap;
       overflow: hidden;
+      opacity: 1;
     }
-    #sidebar.collapsed { width: 72px; }
+    #sidebar.hidden {
+      width: 0px;
+      opacity: 0;
+      border-right: none;
+    }
     
     .brand {
-      padding: 24px;
-      height: 80px;
+      padding: 32px 24px;
       border-bottom: 1px solid var(--staff-border);
       display: flex; align-items: center; justify-content: space-between;
     }
     .brand-text {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 24px; color: var(--gold);
-      transition: opacity 0.2s;
+      font-size: 28px; color: var(--gold);
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
-    #sidebar.collapsed .brand-text { opacity: 0; pointer-events: none; width: 0; }
     
-    .toggle-btn {
-      background: transparent; border: none; color: #999; cursor: pointer;
-      font-size: 24px; padding: 4px; display: flex; align-items: center;
-      transition: color 0.2s;
-    }
-    .toggle-btn:hover { color: #FFF; }
-
-    .nav-links { display: flex; flex-direction: column; padding: 16px 12px; gap: 8px; flex: 1; }
+    .nav-links { display: flex; flex-direction: column; padding: 24px 16px; gap: 12px; flex: 1; }
     .nav-item {
       display: flex; align-items: center; gap: 16px;
-      padding: 14px; border-radius: 12px;
+      padding: 16px; border-radius: 12px;
       color: #999; text-decoration: none; cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
+      font-size: 15px; letter-spacing: 0.03em;
     }
-    .nav-item:hover { background: rgba(255,255,255,0.05); color: #FFF; }
-    .nav-item.active { background: var(--gold); color: #111; font-weight: 500; }
+    .nav-item:hover { background: rgba(255,255,255,0.03); color: #FFF; transform: translateX(4px); }
+    .nav-item.active { background: var(--gold); color: #111; font-weight: 500; box-shadow: 0 4px 15px rgba(185, 151, 91, 0.2); transform: none; }
     .nav-item i { font-size: 22px; flex-shrink: 0; }
-    .nav-label { transition: opacity 0.2s; }
-    #sidebar.collapsed .nav-label { opacity: 0; pointer-events: none; }
 
     @media (max-width: 768px) {
       body { flex-direction: column-reverse; }
-      #sidebar { width: 100% !important; height: 70px; flex-direction: row; border-right: none; border-top: 1px solid var(--staff-border); }
+      #sidebar { width: 100% !important; height: 80px; flex-direction: row; border-right: none; border-top: 1px solid var(--staff-border); opacity: 1; }
+      #sidebar.hidden { height: 0px; opacity: 0; border-top: none; }
       .brand { display: none; }
       .nav-links { flex-direction: row; padding: 8px; justify-content: space-around; width: 100%; }
-      .nav-item { flex-direction: column; gap: 4px; padding: 8px; font-size: 11px; justify-content: center; width: 100%; }
+      .nav-item { flex-direction: column; gap: 6px; padding: 12px; font-size: 12px; justify-content: center; width: 100%; }
       .nav-item i { font-size: 24px; }
-      #sidebar.collapsed .nav-label { opacity: 1; }
     }
 
     /* ── MAIN CONTENT AREA ── */
@@ -98,72 +95,139 @@
     .view-container.active { display: block; }
 
     /* ── VIEW 1: STAFF OPERATIONS ── */
-    #view-staff { padding: 32px; }
-    .staff-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .staff-title { font-size: 28px; font-weight: 600; color: #FFF; }
+    #view-staff { padding: 40px; }
+    .staff-header { 
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; 
+      background: var(--staff-surface); padding: 16px 24px; border-radius: 16px; border: 1px solid var(--staff-border);
+    }
     
-    .staff-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px; }
+    .header-left { display: flex; align-items: center; gap: 20px; }
+    .menu-btn {
+      background: transparent; border: none; color: #FFF; cursor: pointer;
+      font-size: 28px; display: flex; align-items: center; justify-content: center;
+      transition: color 0.2s, transform 0.2s;
+    }
+    .menu-btn:hover { color: var(--gold); transform: scale(1.05); }
+    
+    .staff-title { font-size: 26px; font-weight: 600; color: #FFF; letter-spacing: 0.02em; }
+    
+    .header-actions { display: flex; align-items: center; gap: 16px; }
+    
+    /* ELEGANT MASTER DROPDOWN */
+    .master-assign-group {
+      display: flex; align-items: center; gap: 12px;
+      background: #111; padding: 6px 6px 6px 16px; border-radius: 12px;
+      border: 1px solid #333;
+    }
+    .master-assign-group span { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 0.08em; }
+    .elegant-dropdown {
+      padding: 10px 16px; border-radius: 8px; border: 1px solid var(--staff-border);
+      background: #1A1A1A; color: #FFF; font-family: 'Outfit', sans-serif; font-size: 15px;
+      cursor: pointer; outline: none; min-width: 140px; transition: border-color 0.3s;
+    }
+    .elegant-dropdown:focus { border-color: var(--gold); }
+    
+    .btn-refresh {
+      background: #1A1A1A; border: 1px solid var(--staff-border); color: #FFF;
+      padding: 12px 20px; border-radius: 12px; cursor: pointer; font-size: 15px;
+      display: flex; align-items: center; gap: 8px; transition: all 0.2s;
+    }
+    .btn-refresh:hover { background: #222; border-color: #444; }
+    
+    .staff-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 32px; }
     .staff-col {
-      background: var(--staff-surface); border: 1px solid var(--staff-border);
-      border-radius: 16px; display: flex; flex-direction: column;
-      max-height: calc(100vh - 120px);
+      background: transparent; display: flex; flex-direction: column;
+      max-height: calc(100vh - 160px);
     }
-    .staff-col-head { padding: 20px; border-bottom: 1px solid var(--staff-border); font-weight: 500; display: flex; justify-content: space-between; font-size: 18px;}
-    .staff-col-body { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+    .staff-col-head { 
+      padding: 0 0 16px 0; font-weight: 500; display: flex; justify-content: space-between; 
+      font-size: 18px; color: #CCC; letter-spacing: 0.04em; border-bottom: 1px solid var(--staff-border); margin-bottom: 16px;
+    }
+    .staff-col-body { overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-right: 8px; }
 
-    .staff-card { background: #262626; border: 1px solid var(--staff-border); border-radius: 12px; padding: 20px; }
-    .sc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
-    .sc-name { font-size: 20px; font-weight: 500; color: #FFF; }
-    .sc-service { font-size: 14px; color: #999; margin-bottom: 16px; }
-    .sc-actions { display: flex; gap: 8px; margin-top: 16px; }
+    /* Custom Scrollbar */
+    .staff-col-body::-webkit-scrollbar { width: 6px; }
+    .staff-col-body::-webkit-scrollbar-track { background: transparent; }
+    .staff-col-body::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+    .staff-card { 
+      background: var(--staff-surface); border: 1px solid var(--staff-border); 
+      border-radius: 16px; padding: 24px; transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .staff-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); border-color: #333; }
+    .sc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .sc-name { font-size: 22px; font-weight: 500; color: #FFF; }
+    .sc-service { font-size: 15px; color: #999; margin-bottom: 20px; }
+    .sc-actions { display: flex; gap: 12px; }
     
-    /* Dropdown UI */
-    .quick-assign-label { font-size: 11px; color: #888; letter-spacing: 0.05em; margin-bottom: 8px; display: block; text-transform: uppercase; }
-    .chair-dropdown {
-      flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--staff-border);
-      background: #1A1A1A; color: #FFF; font-family: 'Outfit', sans-serif; font-size: 14px;
-      cursor: pointer;
-    }
-    .chair-dropdown:focus { outline: none; border-color: var(--gold); }
     .btn-assign {
-      padding: 10px 16px; border-radius: 8px; border: none; background: var(--gold);
-      color: #111; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; transition: opacity 0.2s;
+      padding: 12px 24px; border-radius: 10px; border: none; background: var(--gold);
+      color: #111; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.2s;
+      flex: 1; text-align: center; box-shadow: 0 4px 12px rgba(185, 151, 91, 0.15);
     }
-    .btn-assign:hover { opacity: 0.8; }
-
-    .btn { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; font-size: 14px; transition: opacity 0.2s; }
-    .btn:hover { opacity: 0.8; }
-    .btn-green { background: var(--green); color: #FFF; flex: 1; }
-    .btn-outline { background: transparent; border: 1px solid var(--staff-border); color: #CCC; }
-    .btn-outline:hover { background: rgba(255,255,255,0.05); color: #FFF; }
+    .btn-assign:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-cancel {
+      padding: 12px 20px; border-radius: 10px; border: 1px solid var(--staff-border); background: transparent;
+      color: #888; font-weight: 500; font-size: 14px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-cancel:hover { background: rgba(214, 92, 92, 0.1); color: var(--red); border-color: rgba(214, 92, 92, 0.3); }
+    .btn-green { 
+      background: rgba(82, 139, 106, 0.1); color: var(--green); border: 1px solid rgba(82, 139, 106, 0.3);
+      padding: 14px; border-radius: 10px; flex: 1; cursor: pointer; font-weight: 500; font-size: 15px; transition: all 0.2s;
+    }
+    .btn-green:hover { background: var(--green); color: #FFF; }
 
     /* ── VIEW 2: TV DISPLAY ── */
-    #view-tv { background: var(--tv-bg); color: var(--text-dark); padding: 32px; }
-    .tv-shell { display: grid; grid-template-rows: auto 1fr; gap: 32px; height: 100%; max-width: 1800px; margin: 0 auto; }
-    .tv-header { display: flex; align-items: center; justify-content: space-between; background: var(--tv-surface); border: 1px solid var(--tv-border); border-radius: 20px; padding: 20px 32px; box-shadow: 0 12px 40px rgba(0,0,0,0.04); }
-    .tv-brand { font-family: 'Cormorant Garamond', serif; font-size: 36px; color: var(--gold); font-weight: 600; }
+    #view-tv { background: var(--tv-bg); color: var(--text-dark); padding: 40px; }
+    .tv-shell { display: grid; grid-template-rows: auto 1fr; gap: 40px; height: 100%; max-width: 1800px; margin: 0 auto; }
+    .tv-header { 
+      display: flex; align-items: center; justify-content: space-between; 
+      background: var(--tv-surface); border: 1px solid var(--tv-border); border-radius: 24px; 
+      padding: 24px 40px; box-shadow: 0 12px 40px rgba(0,0,0,0.03); 
+    }
+    .tv-brand { 
+      font-family: 'Cormorant Garamond', serif; font-size: 42px; color: var(--gold); font-weight: 600; 
+      cursor: pointer; user-select: none; transition: opacity 0.2s;
+    }
+    .tv-brand:hover { opacity: 0.8; }
     .tv-brand span { color: var(--text-dark); font-weight: 400; }
-    .tv-time { font-family: 'DM Mono', monospace; font-size: 28px; text-align: right; }
-    .tv-date { font-size: 13px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.05em; }
-    .tv-body { display: grid; grid-template-columns: 1.5fr 1fr; gap: 32px; min-height: 0; }
-    .tv-panel { background: var(--tv-surface); border: 1px solid var(--tv-border); border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.04); display: flex; flex-direction: column; overflow: hidden; }
-    .tv-panel-head { padding: 24px 32px; border-bottom: 1px solid var(--tv-border); background: #FAFAFA; font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; }
-    .tv-panel-body { padding: 32px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
-    .tv-active-card { display: flex; align-items: center; gap: 20px; padding: 20px; border: 1px solid var(--tv-border); border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
-    .tv-chair { width: 64px; height: 64px; border-radius: 50%; background: rgba(185,151,91,0.1); border: 1px solid rgba(185,151,91,0.3); display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gold-dim); }
-    .tv-chair span { font-size: 10px; text-transform: uppercase; font-weight: 600; }
-    .tv-chair strong { font-family: 'Cormorant Garamond', serif; font-size: 28px; line-height: 1; }
-    .tv-ac-name { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; }
-    .tv-queue-card { display: flex; align-items: center; gap: 16px; padding: 16px 20px; border: 1px solid #F4F2EC; border-radius: 12px; background: #FFF; }
-    .tv-q-num { font-family: 'DM Mono', monospace; font-size: 18px; color: var(--gold-dim); width: 30px; }
-    .tv-q-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; flex: 1; }
+    .tv-time { font-family: 'DM Mono', monospace; font-size: 32px; text-align: right; font-weight: 300; }
+    .tv-date { font-size: 14px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; margin-top: 4px;}
+    .tv-body { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; min-height: 0; }
+    .tv-panel { 
+      background: var(--tv-surface); border: 1px solid var(--tv-border); border-radius: 24px; 
+      box-shadow: 0 12px 40px rgba(0,0,0,0.03); display: flex; flex-direction: column; overflow: hidden; 
+    }
+    .tv-panel-head { 
+      padding: 32px 40px; border-bottom: 1px solid var(--tv-border); background: #FAFAFA; 
+      font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 600; color: #111;
+    }
+    .tv-panel-body { padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+    .tv-active-card { 
+      display: flex; align-items: center; gap: 24px; padding: 24px; border: 1px solid var(--tv-border); 
+      border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); background: #FFF;
+    }
+    .tv-chair { 
+      width: 72px; height: 72px; border-radius: 50%; background: rgba(185,151,91,0.05); 
+      border: 1px solid rgba(185,151,91,0.3); display: flex; flex-direction: column; 
+      align-items: center; justify-content: center; color: var(--gold-dim); flex-shrink: 0;
+    }
+    .tv-chair span { font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; }
+    .tv-chair strong { font-family: 'Cormorant Garamond', serif; font-size: 32px; line-height: 1; }
+    .tv-ac-name { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 600; color: #111;}
+    .tv-queue-card { 
+      display: flex; align-items: center; gap: 20px; padding: 20px 24px; 
+      border: 1px solid #F4F2EC; border-radius: 16px; background: #FFF; transition: border-color 0.3s;
+    }
+    .tv-q-num { font-family: 'DM Mono', monospace; font-size: 20px; color: var(--gold-dim); width: 32px; font-weight: 500;}
+    .tv-q-name { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; flex: 1; color: #111;}
 
     /* ── SETUP OVERLAY ── */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-    .modal { background: var(--staff-surface); border: 1px solid var(--staff-border); border-radius: 16px; padding: 32px; width: 400px; }
-    .modal h3 { font-size: 24px; margin-bottom: 24px; color: #FFF; }
-    .setup-input { width: 100%; padding: 14px; margin-bottom: 16px; border-radius: 8px; border: 1px solid #444; background: #111; color: #FFF; font-family: 'DM Mono', monospace; font-size: 14px; }
-    .setup-input:focus { outline: none; border-color: var(--gold); }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+    .modal { background: var(--staff-surface); border: 1px solid var(--staff-border); border-radius: 24px; padding: 40px; width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+    .modal h3 { font-size: 28px; margin-bottom: 32px; color: #FFF; font-family: 'Cormorant Garamond', serif; font-weight: 600;}
+    .setup-input { width: 100%; padding: 16px; margin-bottom: 20px; border-radius: 12px; border: 1px solid #333; background: #111; color: #FFF; font-family: 'DM Mono', monospace; font-size: 15px; outline: none; transition: border-color 0.3s;}
+    .setup-input:focus { border-color: var(--gold); }
   </style>
 </head>
 <body>
@@ -173,21 +237,20 @@
       <h3>System Setup</h3>
       <input id="cfg-url" class="setup-input" type="text" placeholder="Supabase URL">
       <input id="cfg-key" class="setup-input" type="password" placeholder="Anon Key">
-      <button class="btn" style="width:100%; background:var(--gold); color:#111; font-weight:600;" onclick="initApp()">Connect Database</button>
+      <button class="btn-assign" style="width:100%; padding:16px; font-size:16px;" onclick="initApp()">Connect Database</button>
     </div>
   </div>
 
-  <nav id="sidebar">
+  <nav id="sidebar" class="hidden">
     <div class="brand">
       <div class="brand-text">Salon OS</div>
-      <button class="toggle-btn" onclick="toggleSidebar()"><i class="ph ph-list"></i></button>
     </div>
     <div class="nav-links">
       <a class="nav-item active" onclick="switchView('staff', this)">
-        <i class="ph ph-users-three"></i> <span class="nav-label">Staff Operations</span>
+        <i class="ph ph-users-three"></i> <span>Staff Operations</span>
       </a>
       <a class="nav-item" onclick="switchView('tv', this)">
-        <i class="ph ph-monitor-play"></i> <span class="nav-label">Waiting Area TV</span>
+        <i class="ph ph-monitor-play"></i> <span>Waiting Area TV</span>
       </a>
     </div>
   </nav>
@@ -196,8 +259,22 @@
     
     <div id="view-staff" class="view-container active">
       <div class="staff-header">
-        <div class="staff-title">Today's Bookings</div>
-        <button class="btn btn-outline" onclick="fetchData()"><i class="ph ph-arrows-clockwise"></i> Refresh</button>
+        
+        <div class="header-left">
+          <button class="menu-btn" onclick="toggleSidebar()"><i class="ph ph-list"></i></button>
+          <div class="staff-title">Today's Bookings</div>
+        </div>
+
+        <div class="header-actions">
+          <div class="master-assign-group">
+            <span>Assign to</span>
+            <select id="master-chair-select" class="elegant-dropdown">
+              <option value="" disabled selected>Select Chair...</option>
+            </select>
+          </div>
+          <button class="btn-refresh" onclick="fetchData()"><i class="ph ph-arrows-clockwise"></i> Sync</button>
+        </div>
+
       </div>
       
       <div class="staff-grid">
@@ -206,7 +283,7 @@
           <div class="staff-col-body" id="staff-queued-list"></div>
         </div>
         
-        <div class="staff-col" style="border-color: rgba(82, 139, 106, 0.4);">
+        <div class="staff-col">
           <div class="staff-col-head"><span>Active in Chair</span> <span id="staff-a-count" style="color:var(--green); font-family:'DM Mono';">0</span></div>
           <div class="staff-col-body" id="staff-active-list"></div>
         </div>
@@ -216,7 +293,7 @@
     <div id="view-tv" class="view-container">
       <div class="tv-shell">
         <div class="tv-header">
-          <div class="tv-brand">Elegant <span>Studio</span></div>
+          <div class="tv-brand" onclick="toggleSidebar()">Elegant <span>Studio</span></div>
           <div>
             <div class="tv-time" id="clock">00:00 AM</div>
             <div class="tv-date" id="date-str">JAN 1, 2026</div>
@@ -240,15 +317,23 @@
 <script>
 let supabaseClient = null;
 let activeBookings = [];
-let totalChairs = 3; // Fallback, updated from DB
+let totalChairs = 3; 
 
 // --- UI TOGGLES ---
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
+function toggleSidebar() { 
+  document.getElementById('sidebar').classList.toggle('hidden'); 
+}
+
 function switchView(viewId, el) {
   document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById(`view-${viewId}`).classList.add('active');
   el.classList.add('active');
+  
+  // Auto-hide sidebar after selection for a cleaner look
+  if(window.innerWidth <= 768 || viewId === 'tv') {
+      document.getElementById('sidebar').classList.add('hidden');
+  }
 }
 
 // --- CLOCK ---
@@ -277,23 +362,16 @@ async function initApp() {
 
 async function fetchSettings() {
   try {
-    // Removed the strict .eq('active', true) just in case the data doesn't perfectly match
-    // Simply fetches the top row to get the chair count.
     const { data, error } = await supabaseClient
       .from('admin_salon_settings')
       .select('concurrent_chairs')
       .limit(1)
       .single();
       
-    if (error) {
-      console.warn("Could not fetch settings. Check your RLS policies on admin_salon_settings table.", error.message);
-    } else if (data && data.concurrent_chairs) {
+    if (data && data.concurrent_chairs) {
       totalChairs = data.concurrent_chairs;
-      console.log(`Successfully loaded dynamic setting: ${totalChairs} chairs.`);
     }
-  } catch (err) {
-    console.warn("Fetch settings error", err);
-  }
+  } catch (err) { console.warn("Fetch settings error", err); }
 }
 
 async function fetchData() {
@@ -320,49 +398,34 @@ function renderAll() {
   document.getElementById('staff-q-count').textContent = queued.length;
   document.getElementById('staff-a-count').textContent = active.length;
 
-  // --- STAFF QUEUE RENDER (Dropdown Logic) ---
-  document.getElementById('staff-queued-list').innerHTML = queued.map(b => {
-    
-    // Generate Dropdown Options for Available Chairs
-    let availableChairsOptions = '';
-    let hasAvailable = false;
-    for(let i = 1; i <= totalChairs; i++) {
-      if(!occupiedChairs.includes(i)) {
-        availableChairsOptions += `<option value="${i}">Chair ${i}</option>`;
-        hasAvailable = true;
-      }
+  // Update Master Dropdown (Global Header)
+  let masterOptions = '<option value="" disabled selected>Select Open Chair...</option>';
+  let hasAvailable = false;
+  for(let i = 1; i <= totalChairs; i++) {
+    if(!occupiedChairs.includes(i)) {
+      masterOptions += `<option value="${i}">Chair ${i}</option>`;
+      hasAvailable = true;
     }
-    
-    // Build Assign UI based on availability
-    let assignUI = '';
-    if (hasAvailable) {
-      assignUI = `
-        <div style="display: flex; gap: 8px;">
-          <select id="select-chair-${b.booking_id}" class="chair-dropdown">
-            <option value="" disabled selected>Select an open chair...</option>
-            ${availableChairsOptions}
-          </select>
-          <button class="btn-assign" onclick="assignFromDropdown(${b.booking_id})">Assign</button>
-        </div>
-      `;
-    } else {
-      assignUI = `<span style="color:#D65C5C; font-size:13px; font-weight:500;">All ${totalChairs} chairs currently occupied</span>`;
-    }
+  }
+  if (!hasAvailable) {
+    masterOptions = '<option value="" disabled selected>All Chairs Full</option>';
+  }
+  document.getElementById('master-chair-select').innerHTML = masterOptions;
 
-    return `
+  // --- STAFF QUEUE RENDER ---
+  document.getElementById('staff-queued-list').innerHTML = queued.map(b => `
     <div class="staff-card">
       <div class="sc-top">
         <div class="sc-name">${b.customer_name}</div>
-        <button class="btn-outline" style="padding: 6px 12px; font-size:12px; border-radius:6px; margin:0;" onclick="updateStatus(${b.booking_id}, 'cancelled')">Cancel</button>
+        <div style="font-family:'DM Mono'; color:#666; font-size:14px;">${new Date(b.start_time).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
       </div>
       <div class="sc-service">${b.package_name || 'Custom Service'} • ${Math.round(b.total_duration_minutes || 0)}m</div>
       
-      <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid #333;">
-        <span class="quick-assign-label">Assign to Chair:</span>
-        ${assignUI}
+      <div class="sc-actions">
+        <button class="btn-cancel" onclick="updateStatus(${b.booking_id}, 'cancelled')">Cancel</button>
+        <button class="btn-assign" onclick="assignFromMaster(${b.booking_id})">Start Service</button>
       </div>
-    </div>`;
-  }).join('') || '<div style="color:#666; text-align:center; padding:20px;">No bookings in queue.</div>';
+    </div>`).join('') || '<div style="color:#555; font-style:italic; padding:20px 0;">Queue is currently empty.</div>';
 
   // --- STAFF ACTIVE RENDER ---
   document.getElementById('staff-active-list').innerHTML = active.map(b => `
@@ -372,10 +435,10 @@ function renderAll() {
         <div style="font-family:'DM Mono'; font-size:18px; color:var(--green); font-weight:500;">Chair ${b.chair_number}</div>
       </div>
       <div class="sc-service">${b.package_name || 'Custom Service'}</div>
-      <div class="sc-actions">
-        <button class="btn btn-green" onclick="updateStatus(${b.booking_id}, 'completed')"><i class="ph ph-check-circle" style="vertical-align:middle; margin-right:4px; font-size:18px;"></i> Mark Complete</button>
+      <div class="sc-actions" style="margin-top:24px;">
+        <button class="btn-green" onclick="updateStatus(${b.booking_id}, 'completed')"><i class="ph ph-check-circle" style="vertical-align:middle; margin-right:6px; font-size:20px;"></i> Mark as Completed</button>
       </div>
-    </div>`).join('') || '<div style="color:#666; text-align:center; padding:20px;">No active chairs.</div>';
+    </div>`).join('') || '<div style="color:#555; font-style:italic; padding:20px 0;">No active services.</div>';
 
   // --- TV RENDER ---
   document.getElementById('tv-active-list').innerHTML = active.map(b => `
@@ -383,25 +446,25 @@ function renderAll() {
       <div class="tv-chair"><span>Chair</span><strong>${b.chair_number}</strong></div>
       <div>
         <div class="tv-ac-name">${b.customer_name}</div>
-        <div style="color:var(--muted); font-size: 18px;">${b.package_name || 'Service in progress'}</div>
+        <div style="color:var(--muted); font-size: 20px; margin-top:4px;">${b.package_name || 'Service in progress'}</div>
       </div>
-    </div>`).join('') || '<div style="padding:40px; text-align:center; color:var(--muted); font-style:italic; font-size:20px;">All chairs currently available.</div>';
+    </div>`).join('') || '<div style="padding:60px 40px; text-align:center; color:var(--muted); font-style:italic; font-size:24px;">All chairs currently available.</div>';
 
   document.getElementById('tv-queue-list').innerHTML = queued.map((b, i) => `
     <div class="tv-queue-card">
       <div class="tv-q-num">${i + 1}</div>
       <div class="tv-q-name">${b.customer_name}</div>
-      <div style="font-family:'DM Mono'; color:var(--muted); font-size: 16px;">${new Date(b.start_time).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
-    </div>`).join('') || '<div style="padding:40px; text-align:center; color:var(--muted); font-style:italic; font-size:20px;">Queue is empty.</div>';
+      <div style="font-family:'DM Mono'; color:var(--muted); font-size: 20px;">${new Date(b.start_time).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+    </div>`).join('') || '<div style="padding:60px 40px; text-align:center; color:var(--muted); font-style:italic; font-size:24px;">Queue is empty.</div>';
 }
 
 // --- ACTIONS ---
-function assignFromDropdown(bookingId) {
-  const selectEl = document.getElementById(`select-chair-${bookingId}`);
+function assignFromMaster(bookingId) {
+  const selectEl = document.getElementById('master-chair-select');
   const chairNum = selectEl.value;
   
   if (!chairNum) {
-    alert("Please select an open chair from the dropdown first.");
+    alert("Please select an open chair from the dropdown menu at the top first.");
     return;
   }
   
