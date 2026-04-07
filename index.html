@@ -113,7 +113,6 @@
     
     .header-actions { display: flex; align-items: center; gap: 16px; }
     
-    /* ELEGANT MASTER DROPDOWN */
     .master-assign-group {
       display: flex; align-items: center; gap: 12px;
       background: #111; padding: 6px 6px 6px 16px; border-radius: 12px;
@@ -144,8 +143,6 @@
       font-size: 18px; color: #CCC; letter-spacing: 0.04em; border-bottom: 1px solid var(--staff-border); margin-bottom: 16px;
     }
     .staff-col-body { overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding-right: 8px; }
-
-    /* Custom Scrollbar */
     .staff-col-body::-webkit-scrollbar { width: 6px; }
     .staff-col-body::-webkit-scrollbar-track { background: transparent; }
     .staff-col-body::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
@@ -177,50 +174,57 @@
     }
     .btn-green:hover { background: var(--green); color: #FFF; }
 
-    /* ── VIEW 2: TV DISPLAY ── */
-    #view-tv { background: var(--tv-bg); color: var(--text-dark); padding: 40px; }
-    .tv-shell { display: grid; grid-template-rows: auto 1fr; gap: 40px; height: 100%; max-width: 1800px; margin: 0 auto; }
+    /* ── VIEW 2: HIGH-DENSITY TV DISPLAY ── */
+    #view-tv { background: var(--tv-bg); color: var(--text-dark); padding: 32px; }
+    .tv-shell { display: grid; grid-template-rows: auto 1fr; gap: 24px; height: 100%; max-width: 1800px; margin: 0 auto; }
     .tv-header { 
       display: flex; align-items: center; justify-content: space-between; 
-      background: var(--tv-surface); border: 1px solid var(--tv-border); border-radius: 24px; 
-      padding: 24px 40px; box-shadow: 0 12px 40px rgba(0,0,0,0.03); 
+      background: var(--tv-surface); border: 1px solid var(--tv-border); border-radius: 20px; 
+      padding: 20px 32px; box-shadow: 0 8px 30px rgba(0,0,0,0.03); 
     }
     .tv-brand { 
-      font-family: 'Cormorant Garamond', serif; font-size: 42px; color: var(--gold); font-weight: 600; 
+      font-family: 'Cormorant Garamond', serif; font-size: 36px; color: var(--gold); font-weight: 600; 
       cursor: pointer; user-select: none; transition: opacity 0.2s;
     }
     .tv-brand:hover { opacity: 0.8; }
     .tv-brand span { color: var(--text-dark); font-weight: 400; }
-    .tv-time { font-family: 'DM Mono', monospace; font-size: 32px; text-align: right; font-weight: 300; }
-    .tv-date { font-size: 14px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; margin-top: 4px;}
-    .tv-body { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; min-height: 0; }
+    .tv-time { font-family: 'DM Mono', monospace; font-size: 26px; text-align: right; font-weight: 300; }
+    .tv-date { font-size: 13px; color: var(--gold-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; margin-top: 2px;}
+    
+    .tv-body { display: grid; grid-template-columns: 1.3fr 1fr; gap: 24px; min-height: 0; }
+    
     .tv-panel { 
-      background: var(--tv-surface); border: 1px solid var(--tv-border); border-radius: 24px; 
-      box-shadow: 0 12px 40px rgba(0,0,0,0.03); display: flex; flex-direction: column; overflow: hidden; 
+      background: var(--tv-surface); border: 1px solid var(--tv-border); border-radius: 20px; 
+      box-shadow: 0 8px 30px rgba(0,0,0,0.03); display: flex; flex-direction: column; overflow: hidden; 
     }
     .tv-panel-head { 
-      padding: 32px 40px; border-bottom: 1px solid var(--tv-border); background: #FAFAFA; 
-      font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 600; color: #111;
+      padding: 20px 32px; border-bottom: 1px solid var(--tv-border); background: #FAFAFA; 
+      font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; color: #111;
     }
-    .tv-panel-body { padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+    .tv-panel-body { padding: 20px 32px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    
+    /* Active Card (Fits 5 comfortably) */
     .tv-active-card { 
-      display: flex; align-items: center; gap: 24px; padding: 24px; border: 1px solid var(--tv-border); 
-      border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); background: #FFF;
+      display: flex; align-items: center; gap: 20px; padding: 16px 24px; border: 1px solid var(--tv-border); 
+      border-radius: 16px; background: #FFF; transition: border-color 0.3s;
     }
     .tv-chair { 
-      width: 72px; height: 72px; border-radius: 50%; background: rgba(185,151,91,0.05); 
+      width: 56px; height: 56px; border-radius: 50%; background: rgba(185,151,91,0.05); 
       border: 1px solid rgba(185,151,91,0.3); display: flex; flex-direction: column; 
       align-items: center; justify-content: center; color: var(--gold-dim); flex-shrink: 0;
     }
-    .tv-chair span { font-size: 11px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; }
-    .tv-chair strong { font-family: 'Cormorant Garamond', serif; font-size: 32px; line-height: 1; }
-    .tv-ac-name { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 600; color: #111;}
+    .tv-chair span { font-size: 9px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; margin-bottom: -2px;}
+    .tv-chair strong { font-family: 'Cormorant Garamond', serif; font-size: 26px; line-height: 1; }
+    .tv-ac-name { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 600; color: #111;}
+    
+    /* Queue Card (Fits 10 comfortably) */
     .tv-queue-card { 
-      display: flex; align-items: center; gap: 20px; padding: 20px 24px; 
-      border: 1px solid #F4F2EC; border-radius: 16px; background: #FFF; transition: border-color 0.3s;
+      display: flex; align-items: center; gap: 16px; padding: 12px 16px; 
+      border: 1px solid #F4F2EC; border-radius: 12px; background: #FFF;
     }
-    .tv-q-num { font-family: 'DM Mono', monospace; font-size: 20px; color: var(--gold-dim); width: 32px; font-weight: 500;}
-    .tv-q-name { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; flex: 1; color: #111;}
+    .tv-q-num { font-family: 'DM Mono', monospace; font-size: 16px; color: var(--gold-dim); width: 24px; font-weight: 500; text-align: center;}
+    .tv-q-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; flex: 1; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+    .tv-q-time { font-family: 'DM Mono', monospace; color: var(--muted); font-size: 15px;}
 
     /* ── SETUP OVERLAY ── */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
@@ -330,7 +334,7 @@ function switchView(viewId, el) {
   document.getElementById(`view-${viewId}`).classList.add('active');
   el.classList.add('active');
   
-  // Auto-hide sidebar after selection for a cleaner look
+  // Auto-hide sidebar after selection
   if(window.innerWidth <= 768 || viewId === 'tv') {
       document.getElementById('sidebar').classList.add('hidden');
   }
@@ -398,7 +402,7 @@ function renderAll() {
   document.getElementById('staff-q-count').textContent = queued.length;
   document.getElementById('staff-a-count').textContent = active.length;
 
-  // Update Master Dropdown (Global Header)
+  // Update Master Dropdown
   let masterOptions = '<option value="" disabled selected>Select Open Chair...</option>';
   let hasAvailable = false;
   for(let i = 1; i <= totalChairs; i++) {
@@ -440,22 +444,22 @@ function renderAll() {
       </div>
     </div>`).join('') || '<div style="color:#555; font-style:italic; padding:20px 0;">No active services.</div>';
 
-  // --- TV RENDER ---
+  // --- HIGH DENSITY TV RENDER ---
   document.getElementById('tv-active-list').innerHTML = active.map(b => `
     <div class="tv-active-card">
       <div class="tv-chair"><span>Chair</span><strong>${b.chair_number}</strong></div>
       <div>
         <div class="tv-ac-name">${b.customer_name}</div>
-        <div style="color:var(--muted); font-size: 20px; margin-top:4px;">${b.package_name || 'Service in progress'}</div>
+        <div style="color:var(--muted); font-size: 16px; margin-top:2px;">${b.package_name || 'Service in progress'}</div>
       </div>
-    </div>`).join('') || '<div style="padding:60px 40px; text-align:center; color:var(--muted); font-style:italic; font-size:24px;">All chairs currently available.</div>';
+    </div>`).join('') || '<div style="padding:40px; text-align:center; color:var(--muted); font-style:italic; font-size:20px;">All chairs currently available.</div>';
 
   document.getElementById('tv-queue-list').innerHTML = queued.map((b, i) => `
     <div class="tv-queue-card">
       <div class="tv-q-num">${i + 1}</div>
       <div class="tv-q-name">${b.customer_name}</div>
-      <div style="font-family:'DM Mono'; color:var(--muted); font-size: 20px;">${new Date(b.start_time).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
-    </div>`).join('') || '<div style="padding:60px 40px; text-align:center; color:var(--muted); font-style:italic; font-size:24px;">Queue is empty.</div>';
+      <div class="tv-q-time">${new Date(b.start_time).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div>
+    </div>`).join('') || '<div style="padding:40px; text-align:center; color:var(--muted); font-style:italic; font-size:20px;">Queue is empty.</div>';
 }
 
 // --- ACTIONS ---
