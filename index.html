@@ -89,7 +89,7 @@
       .nav-links { flex-direction: row; padding: 8px; justify-content: space-around; width: 100%; }
       .nav-item { flex-direction: column; gap: 4px; padding: 8px; font-size: 11px; justify-content: center; width: 100%; }
       .nav-item i { font-size: 24px; }
-      #sidebar.collapsed .nav-label { opacity: 1; } /* Always show labels on mobile bottom nav */
+      #sidebar.collapsed .nav-label { opacity: 1; }
     }
 
     /* ── MAIN CONTENT AREA ── */
@@ -117,17 +117,19 @@
     .sc-service { font-size: 14px; color: #999; margin-bottom: 16px; }
     .sc-actions { display: flex; gap: 8px; margin-top: 16px; }
     
-    /* Quick Assign Buttons */
+    /* Dropdown UI */
     .quick-assign-label { font-size: 11px; color: #888; letter-spacing: 0.05em; margin-bottom: 8px; display: block; text-transform: uppercase; }
-    .mini-chair-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-    .mini-chair-btn {
-      width: 40px; height: 40px; border-radius: 8px;
-      background: #1A1A1A; border: 1px solid #444; color: #FFF;
-      font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500;
-      cursor: pointer; transition: all 0.2s;
-      display: flex; align-items: center; justify-content: center;
+    .chair-dropdown {
+      flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--staff-border);
+      background: #1A1A1A; color: #FFF; font-family: 'Outfit', sans-serif; font-size: 14px;
+      cursor: pointer;
     }
-    .mini-chair-btn:hover { border-color: var(--gold); color: var(--gold); background: rgba(185, 151, 91, 0.1); transform: translateY(-2px); }
+    .chair-dropdown:focus { outline: none; border-color: var(--gold); }
+    .btn-assign {
+      padding: 10px 16px; border-radius: 8px; border: none; background: var(--gold);
+      color: #111; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; transition: opacity 0.2s;
+    }
+    .btn-assign:hover { opacity: 0.8; }
 
     .btn { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: 500; font-size: 14px; transition: opacity 0.2s; }
     .btn:hover { opacity: 0.8; }
@@ -135,7 +137,7 @@
     .btn-outline { background: transparent; border: 1px solid var(--staff-border); color: #CCC; }
     .btn-outline:hover { background: rgba(255,255,255,0.05); color: #FFF; }
 
-    /* ── VIEW 2: TV DISPLAY (UNCHANGED) ── */
+    /* ── VIEW 2: TV DISPLAY ── */
     #view-tv { background: var(--tv-bg); color: var(--text-dark); padding: 32px; }
     .tv-shell { display: grid; grid-template-rows: auto 1fr; gap: 32px; height: 100%; max-width: 1800px; margin: 0 auto; }
     .tv-header { display: flex; align-items: center; justify-content: space-between; background: var(--tv-surface); border: 1px solid var(--tv-border); border-radius: 20px; padding: 20px 32px; box-shadow: 0 12px 40px rgba(0,0,0,0.04); }
@@ -238,13 +240,10 @@
 <script>
 let supabaseClient = null;
 let activeBookings = [];
-let totalChairs = 6; // Fallback, will be updated from DB
+let totalChairs = 3; // Fallback, updated from DB
 
 // --- UI TOGGLES ---
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('collapsed');
-}
-
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('collapsed'); }
 function switchView(viewId, el) {
   document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -268,13 +267,9 @@ async function initApp() {
   supabaseClient = supabase.createClient(url, key);
   document.getElementById('setup-modal').style.display = 'none';
   
-  // 1. Fetch dynamic settings (Chairs)
   await fetchSettings();
-  
-  // 2. Fetch bookings
   await fetchData();
   
-  // 3. Listen for live changes
   supabaseClient.channel('custom-all-channel')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => fetchData())
     .subscribe();
@@ -282,19 +277,22 @@ async function initApp() {
 
 async function fetchSettings() {
   try {
+    // Removed the strict .eq('active', true) just in case the data doesn't perfectly match
+    // Simply fetches the top row to get the chair count.
     const { data, error } = await supabaseClient
       .from('admin_salon_settings')
       .select('concurrent_chairs')
-      .eq('active', true)
       .limit(1)
       .single();
       
-    if (data && data.concurrent_chairs) {
+    if (error) {
+      console.warn("Could not fetch settings. Check your RLS policies on admin_salon_settings table.", error.message);
+    } else if (data && data.concurrent_chairs) {
       totalChairs = data.concurrent_chairs;
-      console.log(`Loaded settings: ${totalChairs} chairs available.`);
+      console.log(`Successfully loaded dynamic setting: ${totalChairs} chairs.`);
     }
   } catch (err) {
-    console.warn("Could not fetch admin settings, defaulting to 6 chairs.", err);
+    console.warn("Fetch settings error", err);
   }
 }
 
@@ -319,23 +317,36 @@ function renderAll() {
   const active = activeBookings.filter(b => b.status === 'active');
   const occupiedChairs = active.map(b => b.chair_number);
 
-  // Counters
   document.getElementById('staff-q-count').textContent = queued.length;
   document.getElementById('staff-a-count').textContent = active.length;
 
-  // --- STAFF QUEUE RENDER (Single-Click Assign Logic) ---
+  // --- STAFF QUEUE RENDER (Dropdown Logic) ---
   document.getElementById('staff-queued-list').innerHTML = queued.map(b => {
-    // Generate available chair buttons for this specific booking
-    let quickAssignBtns = '';
+    
+    // Generate Dropdown Options for Available Chairs
+    let availableChairsOptions = '';
+    let hasAvailable = false;
     for(let i = 1; i <= totalChairs; i++) {
       if(!occupiedChairs.includes(i)) {
-        quickAssignBtns += `<button class="mini-chair-btn" onclick="startService(${b.booking_id}, ${i})" title="Assign to Chair ${i}">${i}</button>`;
+        availableChairsOptions += `<option value="${i}">Chair ${i}</option>`;
+        hasAvailable = true;
       }
     }
     
-    // If no chairs are free, show a message instead of buttons
-    if (!quickAssignBtns) {
-      quickAssignBtns = `<span style="color:#D65C5C; font-size:13px; font-weight:500;">All chairs currently occupied</span>`;
+    // Build Assign UI based on availability
+    let assignUI = '';
+    if (hasAvailable) {
+      assignUI = `
+        <div style="display: flex; gap: 8px;">
+          <select id="select-chair-${b.booking_id}" class="chair-dropdown">
+            <option value="" disabled selected>Select an open chair...</option>
+            ${availableChairsOptions}
+          </select>
+          <button class="btn-assign" onclick="assignFromDropdown(${b.booking_id})">Assign</button>
+        </div>
+      `;
+    } else {
+      assignUI = `<span style="color:#D65C5C; font-size:13px; font-weight:500;">All ${totalChairs} chairs currently occupied</span>`;
     }
 
     return `
@@ -347,10 +358,8 @@ function renderAll() {
       <div class="sc-service">${b.package_name || 'Custom Service'} • ${Math.round(b.total_duration_minutes || 0)}m</div>
       
       <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid #333;">
-        <span class="quick-assign-label">Quick Start on Available Chair:</span>
-        <div class="mini-chair-grid">
-          ${quickAssignBtns}
-        </div>
+        <span class="quick-assign-label">Assign to Chair:</span>
+        ${assignUI}
       </div>
     </div>`;
   }).join('') || '<div style="color:#666; text-align:center; padding:20px;">No bookings in queue.</div>';
@@ -387,8 +396,19 @@ function renderAll() {
 }
 
 // --- ACTIONS ---
+function assignFromDropdown(bookingId) {
+  const selectEl = document.getElementById(`select-chair-${bookingId}`);
+  const chairNum = selectEl.value;
+  
+  if (!chairNum) {
+    alert("Please select an open chair from the dropdown first.");
+    return;
+  }
+  
+  startService(bookingId, parseInt(chairNum));
+}
+
 async function startService(bookingId, chairNum) {
-  // Single click instantly assigns and starts the service
   const { error } = await supabaseClient
     .from('bookings')
     .update({ status: 'active', chair_number: chairNum })
@@ -403,7 +423,7 @@ async function updateStatus(bookingId, newStatus) {
   
   const payload = { status: newStatus };
   if(newStatus === 'completed' || newStatus === 'cancelled') {
-    payload.chair_number = null; // Free up the chair
+    payload.chair_number = null; 
   }
 
   const { error } = await supabaseClient
